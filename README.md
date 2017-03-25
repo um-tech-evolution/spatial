@@ -1,2 +1,2 @@
 # spatial
-Spatially varying environment cultural evolution simuation
+Spatially varying environment cultural evolution simuation.
