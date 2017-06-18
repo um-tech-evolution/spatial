@@ -1,8 +1,8 @@
 module SpatialEvolution
-include("../spatial/types.jl")
-include("../spatial/propsel.jl")
-include("../spatial/spatial.jl")
-include("../spatial/run_spatial.jl")
+include("types.jl")
+include("propsel.jl")
+include("spatial.jl")
+include("run_spatial.jl")
 end
 
 using SpatialEvolution
