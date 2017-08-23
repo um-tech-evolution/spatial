@@ -1,7 +1,7 @@
 export variant_type, fitness_location_type
 using Distributions
-typealias Population Array{Int64,1}
-typealias PopList Array{Population,1}
+const Population = Array{Int64,1}
+const PopList = Array{Population,1}
 
 type variant_type
   parent::Int64   # The variant that gave rise to this variant
