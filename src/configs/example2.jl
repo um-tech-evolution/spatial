@@ -11,7 +11,8 @@ export simtype
 @everywhere simtype = 2    
 const T     = 40      # Number of trials
 const vtbl = Dict{Int64,variant_type}()
-@everywhere const N = 8        # Meta-population size
+#@everywhere const N = 8        # Meta-population size
+@everywhere const N_list = [8]        # Meta-population size list
 const num_subpops_list = [1,2]
 const normal_stddev = 0.1
 const mu = 0.05                 # per-individual innovation rate 

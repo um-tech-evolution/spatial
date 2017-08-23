@@ -7,8 +7,9 @@ or
 =#
 export simtype
 @everywhere simtype = 2    
-const T     = 40      # Number of trials
+#const T     = 40      # Number of trials
 @everywhere const N = 8        # Meta-population size
+@everywhere const N_list = [4,8]        # Meta-population size list
 const num_subpops_list = [2]                     # Number of subpopulations
 const mu = 0.05                 # per-individual innovation rate 
 #const ne = 1                    # number emmigrants

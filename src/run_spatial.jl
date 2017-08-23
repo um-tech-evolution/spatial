@@ -34,7 +34,7 @@ end
 function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_result_type )
   param_strings = [
     "# $(string(Dates.today()))",
-    "# N=$(sr.N)",
+    #"# N=$(sr.N)",
     "# num_subpops_list=$(num_subpops_list)",
     #"# num_attributes=$(sr.num_attributes)",
     "# mu=$(sr.mu)",
@@ -51,6 +51,7 @@ function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_r
 
   write(stream,join(param_strings,"\n"),"\n")
   heads = [
+    "N",
     "num_subpops",
     "subpop_size",
     "num_emigrants",
@@ -67,7 +68,9 @@ function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_r
 end
     
 function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
-  line = Any[sr.num_subpops,
+  line = Any[
+          sr.N,
+          sr.num_subpops,
           Int(ceil(sr.N/sr.num_subpops)),
           sr.ne,
           sr.use_fit_locations,

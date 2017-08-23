@@ -5,6 +5,7 @@ export simtype
 @everywhere simtype = 2    
 const T     = 40      # Number of trials
 @everywhere const N = 64        # Meta-population size
+@everywhere const N_list = [32,64]        # Meta-population size list
 #const num_subpops_list = [1,2,4,8,16,32]                     # Number of subpopulations
 const num_subpops_list = [1,4]                     # Number of subpopulations
 const mu = 0.00                 # per-individual innovation rate 
@@ -15,7 +16,8 @@ const num_attributes = 5        # number attributes for quantitative representat
 const ngens = 10000       # Generations after burn-in
 const horiz_select=true
 const circular_variation=true
-const extreme_variation=false
+#const extreme_variation=false
+const extreme_variation_list=[false]
 const burn_in= 2.0    # generations of burn_in as a multiple of N
 normal_stddev = 0.05
 const use_fit_locations_list=[false,true]
