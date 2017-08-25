@@ -1,4 +1,4 @@
-# Spatial structure simulation with horizontal transfer
+# ContVar structure simulation with horizontal transfer
 export spatial_simulation, fitness
 
 empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
@@ -22,7 +22,7 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     extreme==true  means that horizontal transfer is done in a forward circular fashion
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
-function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
+function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   variant_table = Dict{Int64,variant_type}()
   #println("spatial simulation: quantitative: ",quantitative)
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
@@ -128,8 +128,8 @@ end
 @doc """  copy_parent()
 """
 function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64, mu::Float64,
-    normal_stddev::Float64, variant_table::Dict{Int64,SpatialEvolution.variant_type},
-    fitness_locations::Vector{SpatialEvolution.fitness_location_type} )
+    normal_stddev::Float64, variant_table::Dict{Int64,ContVarEvolution.variant_type},
+    fitness_locations::Vector{ContVarEvolution.fitness_location_type} )
   i = id[1]
   vt = variant_table[v]
   vt.attributes = mutate_attributes( vt.attributes, normal_stddev )
@@ -170,14 +170,14 @@ function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64 
   return attributes
 end
 
-function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, fitness_locations::Vector{SpatialEvolution.fitness_location_type} )
+function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, fitness_locations::Vector{ContVarEvolution.fitness_location_type} )
   j = rand(1:length(attributes))   # Choose a random attribute
   #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
   attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
   #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
 end 
 
-function initialize_fitness_locations( sr::SpatialEvolution.spatial_result_type )
+function initialize_fitness_locations( sr::ContVarEvolution.spatial_result_type )
   fitness_locations = [ fitness_location_type( zeros(Float64,sr.num_attributes) ) for j = 1:sr.num_fit_locations ]
   if !sr.circular_variation && !sr.extreme_variation  # random variation---no relationship to subpop number
     #println("init sr.circular_variation: ",sr.circular_variation,"  sr.extreme_variation: ",sr.extreme_variation)
@@ -227,7 +227,7 @@ end
   subpops is modified by this function (as a side effect)
 """
 function horiz_transfer_circular!( N::Int64, m::Int64, num_emmigrants::Int64, subpops::PopList, id::Vector{Int64}, 
-    variant_table::Dict{Int64,variant_type}, fitness_locations::Vector{SpatialEvolution.fitness_location_type};
+    variant_table::Dict{Int64,variant_type}, fitness_locations::Vector{ContVarEvolution.fitness_location_type};
      forward::Bool=true, neg_select::Bool=true, emmigrant_select::Bool=true )
   n = Int(floor(N/m))    # size of subpopulations
   num_attributes = length(variant_table[subpops[1][1]].attributes)

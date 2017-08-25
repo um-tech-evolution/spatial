@@ -1,6 +1,6 @@
 #=
 Recommended command line to run:
->  julia -L SpatialEvolution.jl run.jl configs/example1
+>  julia -L ContVarEvolution.jl run.jl configs/example1
 =#
 export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
@@ -27,22 +27,25 @@ function print_spatial_result( sr::spatial_result_type )
   println("circular_variation: ",sr.circular_variation)
   println("extreme_variation: ",sr.extreme_variation)
   println("fitness_mean: ", sr.fitness_mean)
-  println("fitness_variance: ", sr.fitness_variance)
-  println("attiribute_variance: ", sr.attribute_variance)
+  println("fitness_coef_var: ", sqrt(sr.fitness_variance)/sr.fitness_mean)
+  println("attiribute_coef_var: ", sqrt(sr.attribute_variance)/sr.fitness_mean)
 end
 
-function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_result_type )
+function writeheader( stream::IO, sr::spatial_result_type )
   param_strings = [
     "# $(string(Dates.today()))",
     #"# N=$(sr.N)",
-    "# num_subpops_list=$(num_subpops_list)",
+    #"# num_subpops_list=$(num_subpops_list)",
     #"# num_attributes=$(sr.num_attributes)",
     "# mu=$(sr.mu)",
     "# horiz_select=$(sr.horiz_select)",
     #"# num_emmigrants=$(sr.ne)",
     "# ngens=$(sr.ngens)",
-    #"# circular_variation=$(sr.circular_variation)",
-    #"# extreme_variation=$(sr.extreme_variation)",
+    "# num_emigrants=$(sr.ne)",
+    "# use_fit_locations=$(sr.use_fit_locations)",
+    "# num_fit_locations=$(sr.num_fit_locations)",
+    "# circular_variation=$(sr.circular_variation)",
+    "# extreme_variation=$(sr.extreme_variation)",
     "# burn_in=$(sr.burn_in)",
     "# normal_stddev=$(sr.normal_stddev)",
     "# ideal_max=$(sr.ideal_max)",
@@ -55,16 +58,16 @@ function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_r
     "num_subpops",
     "subpop_size",
     "normal_stddev",
-    "num_emigrants",
-    "use_fit_locations",
-    "num_fit_locations",
+    #"num_emigrants",
+    #"use_fit_locations",
+    #"num_fit_locations",
     "num_attributes",
-    "circular_variation",
-    "extreme_variation",
+    #"circular_variation",
+    #"extreme_variation",
     #"horiz_select",
     "mean_fitness",
-    "stddev_fitness",
-    "attribute_stddev"]
+    "fitness_coef_var",
+    "attribute_coef_var"]
   write(stream,join(heads,","),"\n")
 end
     
@@ -74,16 +77,16 @@ function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
           sr.num_subpops,
           Int(ceil(sr.N/sr.num_subpops)),
           sr.normal_stddev,
-          sr.ne,
-          sr.use_fit_locations,
-          sr.num_fit_locations,
+          #sr.ne,
+          #sr.use_fit_locations,
+          #sr.num_fit_locations,
           sr.num_attributes,
-          sr.circular_variation,
-          sr.extreme_variation,
+          #sr.circular_variation,
+          #sr.extreme_variation,
           #sr.horiz_select,
           sr.fitness_mean,
-          sqrt(sr.fitness_variance),
-          sqrt(sr.attribute_variance)]
+          sqrt(sr.fitness_variance)/sr.fitness_mean,
+          sqrt(sr.attribute_variance)/sr.fitness_mean]
   write(stream,join(line,","),"\n")
 end
 
