@@ -75,7 +75,6 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
       horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations,
           forward=false, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select )
     end
-    #Base.push!(pop_list,deepcopy(subpops))
     previous_subpops = deepcopy(subpops)
     #print_pop(STDOUT,subpops,variant_table)
     if g > int_burn_in

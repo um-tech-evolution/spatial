@@ -3,12 +3,13 @@ using ContVarEvolution
 function run_trials( simname::AbstractString ) 
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
-  sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
+  sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,num_fit_locations,ne,num_attributes_list[1], mu, ngens, burn_in,
       use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev_list[1], ideal_max, ideal_min, ideal_range )
   sr_list_run = ContVarEvolution.spatial_result_type[]
   trial=1
   for N in N_list
-    for normal_stddev in normal_stddev_list
+    for num_attributes in num_attributes_list
+      for normal_stddev in normal_stddev_list
             circular_variation = extreme_variation = false
             #println("num_fit_locations: ",num_fit_locations)
             sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
@@ -16,6 +17,7 @@ function run_trials( simname::AbstractString )
             Base.push!(sr_list_run, sr )
             #println("= = = = = = = =")
             #writerow(STDOUT,trial,sr)
+      end
     end
   end
   println("===================================")

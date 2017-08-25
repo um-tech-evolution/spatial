@@ -24,15 +24,13 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
 """
 function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   variant_table = Dict{Int64,variant_type}()
-  #println("spatial simulation: quantitative: ",quantitative)
-  #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
-  #println("fitness_locations: ",fitness_locations)
   #int_burn_in = Int(round(sr.burn_in*N+50.0))
   int_burn_in = Int(round(sr.burn_in*sr.N))   # reduce for testing
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
   #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.ne)
+  println("N: ",sr.N,"  normal_stddev: ",sr.normal_stddev,"  num_attributes: ",sr.num_attributes)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
@@ -133,9 +131,11 @@ function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64, mu::Float
   i = id[1]
   vt = variant_table[v]
   vt.attributes = mutate_attributes( vt.attributes, normal_stddev )
+  #=
   if rand() < mu
     innovate_attribute( vt.attributes, fit_loc_ind, fitness_locations )
   end
+  =#
   #println("copy_parent v: ",v,"  fit_loc_ind: ",fit_loc_ind)
   #println("copy_parent v: ",v,"  attributes: ",vt.attributes)
   new_fit = fitness( vt.attributes, fitness_locations[fit_loc_ind].ideal )
@@ -169,13 +169,14 @@ function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64 
   #println("attributes: ",attributes)
   return attributes
 end
-
+#=
 function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, fitness_locations::Vector{ContVarEvolution.fitness_location_type} )
   j = rand(1:length(attributes))   # Choose a random attribute
   #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
   attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
   #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
 end 
+=#
 
 function initialize_fitness_locations( sr::ContVarEvolution.spatial_result_type )
   fitness_locations = [ fitness_location_type( zeros(Float64,sr.num_attributes) ) for j = 1:sr.num_fit_locations ]
