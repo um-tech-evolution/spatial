@@ -80,7 +80,7 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
       (mmeans,vvars) = means(subpops,variant_table)
       cumm_means += mmeans
       cumm_variances += vvars
-      avars = attr_vars(subpops,variant_table)
+      avars = attr_vars(subpops,variant_table, sr.num_attributes )
       cumm_attr_vars += avars
       #println("cumm_means: ",cumm_means)
       #println("cumm_variances: ",cumm_variances)
@@ -303,8 +303,8 @@ function means( subpops::PopList, variant_table::Dict{Int64,variant_type} )
   return means, vars
 end
 
-function attr_vars( subpops::PopList, variant_table::Dict{Int64,variant_type} )
-  num_attributes = length(variant_table[1].attributes)
+function attr_vars( subpops::PopList, variant_table::Dict{Int64,variant_type}, num_attributes::Int64 )
+  #num_attributes = length(variant_table[1].attributes)
   #println("attr_vars: num_attributes: ",num_attributes)
   #=
   for s in subpops
@@ -336,7 +336,8 @@ end
 
 function clean_up_variant_table( previous_variant_id::Int64, previous_previous_variant_id::Int64,
     variant_table::Dict{Int64,variant_type} )
-  for v = previous_previous_variant_id:previous_variant_id-1
+  #println("clean up:  ppv: ",previous_previous_variant_id,"  pv: ",previous_variant_id)
+  for v = previous_variant_id:previous_previous_variant_id-1
     delete!(variant_table,v)
   end
 end
