@@ -9,7 +9,8 @@ function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64,
     use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
       ideal_max, ideal_min, ideal_range )
   return spatial_result_type( N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, burn_in,
-    use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 0.0, 0.0, 0.0 )
+      use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 0.0, 0.0, 0.0,
+      Float64[] )
 end
 
 function print_spatial_result( sr::spatial_result_type )
@@ -29,6 +30,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("fitness_mean: ", sr.fitness_mean)
   println("fitness_coef_var: ", sqrt(sr.fitness_variance)/sr.fitness_mean)
   println("attiribute_coef_var: ", sqrt(sr.attribute_variance)/sr.fitness_mean)
+  println("fit_diff_list: ",sr.fit_diff_list)
 end
 
 function writeheader( stream::IO, sr::spatial_result_type )

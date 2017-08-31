@@ -34,5 +34,6 @@ type spatial_result_type
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64
+  fit_diff_list::Vector{Float64}
 end
 
