@@ -25,14 +25,12 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
 function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
-  #global fit_diff_list = Float64[]
+  fit_diff_counter = DataStructures.counter(Int64)
   variant_table = Dict{Int64,variant_type}()
   fitness_locations = initialize_fitness_locations(sr)
-  #int_burn_in = Int(round(sr.burn_in*N+50.0))
-  int_burn_in = Int(round(sr.burn_in*sr.N))   # reduce for testing
+  int_burn_in = Int(round(sr.burn_in*sr.N+50.0))  # reduce for testing
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
-  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.ne)
   println("N: ",sr.N,"  normal_stddev: ",sr.normal_stddev,"  num_attributes: ",sr.num_attributes)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
@@ -64,7 +62,7 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
       for i = 1:n
         fit_loc_ind = fit_loc_index(sr.N,sr.num_subpops,sr.num_fit_locations,j,i)
         #cp = copy_parent( pop_list[g-1][j][i], id, fit_loc_ind, sr.mu, sr.normal_stddev, variant_table, fitness_locations )
-        cp = copy_parent( previous_subpops[j][i], id, fit_loc_ind, variant_table, fitness_locations, sr, after_burn_in )
+        cp = copy_parent( previous_subpops[j][i], id, fit_loc_ind, variant_table, fitness_locations, sr, after_burn_in, fit_diff_counter )
         #println("j: ",j,"  i: ",i,"  pl: ",pop_list[g-1][j][i],"  cp: ",cp)
         subpops[j][i] = cp
       end
@@ -101,8 +99,9 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   sr.fitness_variance = mean(cumm_variances)
   sr.attribute_variance = mean(cumm_attr_vars)
   #println("fit diff list: ",sr.fit_diff_list)
-  bins = create_bins( sr.fit_diff_list, 1.0/sr.N )
-  println("bins: ",[(k,bins[k]) for k in sort(collect(keys(bins)))])
+  #bins = create_bins( sr.fit_diff_list, 1.0/sr.N )
+  (sr.neg_count, sr.neg_neutral, sr.pos_neutral, sr.pos_count ) = summarize_bins( fit_diff_counter )
+  #println("fit_diff_counter: ",[(k,fit_diff_counter[k]) for k in sort(collect(keys(fit_diff_counter)))])
   return sr
 end
 
@@ -115,6 +114,9 @@ function fitness( attributes::Vector{Float64}, ideal::Vector{Float64} )
     sum += abs( attributes[k] - ideal[k] )
   end
   #println("fitness: attributes: ",attributes,"  ideal: ",ideal," fit: ",1.0-sum/length(attributes))
+  result = 0.5-sum/length(attributes)
+  @assert result >= 0.0
+  return result
   return 1.0-sum/length(attributes)
 end
 
@@ -136,7 +138,7 @@ end
 """
 function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64, 
     variant_table::Dict{Int64,ContVarEvolution.variant_type}, fitness_locations::Vector{ContVarEvolution.fitness_location_type}, 
-    sr::ContVarEvolution.spatial_result_type, after_burn_in::Bool )
+    sr::ContVarEvolution.spatial_result_type, after_burn_in::Bool, fit_diff_counter::DataStructures.Accumulator{Int64,Int64} )
   i = id[1]
   vt = variant_table[v]
   vt.attributes = mutate_attributes( vt.attributes, sr.normal_stddev )
@@ -146,7 +148,8 @@ function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64,
   #println("copy_parent i: ",i,"  new_fit: ",new_fit)
   #println("cp i: ",i,"  fit diff: ",new_fit-vt.fitness)
   if after_burn_in
-    Base.push!(sr.fit_diff_list,new_fit-vt.fitness)
+    #Base.push!(sr.fit_diff_list,new_fit-vt.fitness)
+    increment_bins( fit_diff_counter, new_fit-vt.fitness, 1.0/sr.N )
   end
   variant_table[i] = deepcopy(vt)
   variant_table[i].fitness = new_fit

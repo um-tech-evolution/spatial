@@ -1,5 +1,5 @@
 export variant_type, fitness_location_type
-using Distributions
+#using Distributions
 const Population = Array{Int64,1}
 const PopList = Array{Population,1}
 
@@ -34,6 +34,10 @@ type spatial_result_type
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64
-  fit_diff_list::Vector{Float64}
+  neg_count::Int64        # Number of fitness differences < -1.0/N
+  neg_neutral::Int64      # Number of fitness differences >= -1.0/N  and < 0.0
+  pos_neutral::Int64     # Number of fitness differences >= 0.0 and < 1.0/N
+  pos_count::Int64        # Number of fitness differences >= 1.0/N
+  #fit_diff_list::Vector{Float64}
 end
 

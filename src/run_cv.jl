@@ -11,20 +11,17 @@ function run_trials( simname::AbstractString )
     for num_attributes in num_attributes_list
       for normal_stddev in normal_stddev_list
             circular_variation = extreme_variation = false
-            #println("num_fit_locations: ",num_fit_locations)
             sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
                use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range )
             Base.push!(sr_list_run, sr )
-            #println("= = = = = = = =")
-            #writerow(STDOUT,trial,sr)
       end
     end
   end
   println("===================================")
   sr_list_result = pmap(spatial_simulation, sr_list_run )
   trial = 1
-  writeheader( stream, sr )
   writeheader( STDOUT, sr )
+  writeheader( stream, sr )
   for sr_result in sr_list_result
     writerow(stream,trial,sr_result)
     writerow(STDOUT,trial,sr_result)
