@@ -27,7 +27,7 @@ type spatial_result_type
   horiz_select::Bool       # Whether to use selection during horzontal transfer
   circular_variation::Bool    # Whether to vary ideal values in a circular fashion
   extreme_variation::Bool    # Whether to vary ideal values by randomly choosing between high and low values
-  normal_stddev::Float64  # standard deviation of normal distribution of mutation perturbations
+  mutation_stddev::Float64  # standard deviation of mutation distribution of mutation perturbations
   ideal_max::Float64      # maximum ideal value for circular and extreme ideal values
   ideal_min::Float64      # minimum ideal value for circular and extreme ideal values
   ideal_range::Float64    # range of ideal values for circular and extreme ideal 

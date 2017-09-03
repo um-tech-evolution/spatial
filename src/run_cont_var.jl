@@ -6,10 +6,10 @@ export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
 function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, burn_in::Float64,
-    use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
+    use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, mutation_stddev::Float64,
       ideal_max, ideal_min, ideal_range )
   return spatial_result_type( N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, burn_in,
-      use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 0.0, 0.0, 0.0,
+      use_fit_locations, horiz_select, circular_variation, extreme_variation, mutation_stddev, ideal_max, ideal_min, ideal_range, 0.0, 0.0, 0.0,
       0,0,0,0 )
 end
 
@@ -20,7 +20,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("ne: ", sr.ne)
   println("num_attributes: ", sr.num_attributes)
   println("mu: ", sr.mu)
-  println("normal_stddev: ", sr.normal_stddev)
+  println("mutation_stddev: ", sr.mutation_stddev)
   println("ngens: ", sr.ngens)
   println("burn_in: ", sr.burn_in)
   println("use_fit_locations: ", sr.use_fit_locations)
@@ -52,7 +52,7 @@ function writeheader( stream::IO, sr::spatial_result_type )
     "# circular_variation=$(sr.circular_variation)",
     "# extreme_variation=$(sr.extreme_variation)",
     "# burn_in=$(sr.burn_in)",
-    "# normal_stddev=$(sr.normal_stddev)",
+    "# mutation_stddev=$(sr.mutation_stddev)",
     "# ideal_max=$(sr.ideal_max)",
     "# ideal_min=$(sr.ideal_min)",
     "# ideal_range=$(sr.ideal_range)"]
@@ -62,7 +62,7 @@ function writeheader( stream::IO, sr::spatial_result_type )
     "N",
     "num_subpops",
     "subpop_size",
-    "normal_stddev",
+    "mutation_stddev",
     #"num_emigrants",
     #"use_fit_locations",
     #"num_fit_locations",
@@ -81,11 +81,12 @@ function writeheader( stream::IO, sr::spatial_result_type )
 end
     
 function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
+  sum_fitdiff = Float64(sum( (sr.neg_count, sr.neg_neutral, sr.pos_neutral, sr.pos_count) ))
   line = Any[
           sr.N,
           sr.num_subpops,
           Int(ceil(sr.N/sr.num_subpops)),
-          sr.normal_stddev,
+          sr.mutation_stddev,
           #sr.ne,
           #sr.use_fit_locations,
           #sr.num_fit_locations,
@@ -96,10 +97,10 @@ function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
           sr.fitness_mean,
           sqrt(sr.fitness_variance)/sr.fitness_mean,
           sqrt(sr.attribute_variance)/sr.fitness_mean,
-          sr.neg_count,
-          sr.neg_neutral,
-          sr.pos_neutral,
-          sr.pos_count]
+          sr.neg_count/sum_fitdiff,
+          sr.neg_neutral/sum_fitdiff,
+          sr.pos_neutral/sum_fitdiff,
+          sr.pos_count/sum_fitdiff]
   write(stream,join(line,","),"\n")
 end
 

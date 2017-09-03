@@ -31,7 +31,7 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   int_burn_in = Int(round(sr.burn_in*sr.N+50.0))  # reduce for testing
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
-  println("N: ",sr.N,"  normal_stddev: ",sr.normal_stddev,"  num_attributes: ",sr.num_attributes)
+  println("N: ",sr.N,"  mutation_stddev: ",sr.mutation_stddev,"  num_attributes: ",sr.num_attributes)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
@@ -57,17 +57,18 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
     previous_previous_variant_id = previous_variant_id
     previous_variant_id = current_variant_id
     current_variant_id = id[1]
-    #println("g: ",g)
     for j = 1:sr.num_subpops
       for i = 1:n
         fit_loc_ind = fit_loc_index(sr.N,sr.num_subpops,sr.num_fit_locations,j,i)
-        #cp = copy_parent( pop_list[g-1][j][i], id, fit_loc_ind, sr.mu, sr.normal_stddev, variant_table, fitness_locations )
+        #cp = copy_parent( pop_list[g-1][j][i], id, fit_loc_ind, sr.mu, sr.mutation_stddev, variant_table, fitness_locations )
         cp = copy_parent( previous_subpops[j][i], id, fit_loc_ind, variant_table, fitness_locations, sr, after_burn_in, fit_diff_counter )
         #println("j: ",j,"  i: ",i,"  pl: ",pop_list[g-1][j][i],"  cp: ",cp)
         subpops[j][i] = cp
       end
       #println("g:",g," j:",j,"  ",[(v,variant_table[v].attributes) for v in subpops[j]])
+      #println("B g: ",g,"  j: ",j,"  subpops[j]: ",subpops[j])
       subpops[j] = propsel( subpops[j], n, variant_table )
+      #println("A g: ",g,"  j: ",j,"  subpops[j]: ",subpops[j])
     end
     if g%2==0
       horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations,
@@ -141,7 +142,7 @@ function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64,
     sr::ContVarEvolution.spatial_result_type, after_burn_in::Bool, fit_diff_counter::DataStructures.Accumulator{Int64,Int64} )
   i = id[1]
   vt = variant_table[v]
-  vt.attributes = mutate_attributes( vt.attributes, sr.normal_stddev )
+  vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev )
   #println("copy_parent v: ",v,"  fit_loc_ind: ",fit_loc_ind)
   #println("copy_parent v: ",v,"  attributes: ",vt.attributes,"  prev fitness: ",vt.fitness)
   new_fit = fitness( vt.attributes, fitness_locations[fit_loc_ind].ideal )
@@ -159,13 +160,13 @@ function copy_parent( v::Int64, id::Vector{Int64}, fit_loc_ind::Int64,
   return i
 end  
 
-function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64 )
-  #stddev = normal_stddev()   # Standard deviation of mutational perturbations
-  #println("mutate attributes  normal_stddev: ",normal_stddev)
-  #attributes = min(1.0,max(0.0,attributes+normal_stddev*randn(length(attributes))))
+function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64 )
+  #stddev = mutation_stddev()   # Standard deviation of mutational perturbations
+  #println("mutate attributes  mutation_stddev: ",mutation_stddev)
+  #attributes = min(1.0,max(0.0,attributes+mutation_stddev*randn(length(attributes))))
   for i = 1:length(attributes)
     #println("B attributes[",i,"]: ",attributes[i])
-    attributes[i] += +normal_stddev*randn()
+    attributes[i] += +mutation_stddev*randn()
     if attributes[i] < 0
         attributes[i] += 1.0
         #println("wrapped up: ",attributes[i])

@@ -9,10 +9,10 @@ export simtype
 @everywhere simtype = 2    
 #@everywhere const N = 8        # Meta-population size
 @everywhere const N_list = [4]        # Meta-population size list
-#const normal_stddev = 0.05
+#const mutation_stddev = 0.05
 #const num_attributes = 1        # number attributes for quantitative representation
 const num_attributes_list = [1,5]        # number attributes for quantitative representation
-const normal_stddev_list = [0.05]
+const mutation_stddev_list = [0.05]
 const num_subpops = 1
 const mu = 0.00                 # per-individual innovation rate.  Not used in cont_var.
 const ne = 1                    # number emmigrants

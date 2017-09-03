@@ -1,18 +1,31 @@
 using ContVarEvolution
 
 function run_trials( simname::AbstractString ) 
+  circular_variation = extreme_variation = false
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
   sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,num_fit_locations,ne,num_attributes_list[1], mu, ngens, burn_in,
-      use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev_list[1], ideal_max, ideal_min, ideal_range )
+      use_fit_locations, horiz_select, circular_variation, extreme_variation, Nm_list[1]/N_list[1]/100, ideal_max, ideal_min, ideal_range )
   sr_list_run = ContVarEvolution.spatial_result_type[]
   trial=1
+  #=
   for N in N_list
     for num_attributes in num_attributes_list
-      for normal_stddev in normal_stddev_list
-            circular_variation = extreme_variation = false
+      for mutation_stddev in mutation_stddev_list
             sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
-               use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range )
+               use_fit_locations, horiz_select, circular_variation, extreme_variation, mutation_stddev, ideal_max, ideal_min, ideal_range )
+            Base.push!(sr_list_run, sr )
+      end
+    end
+  end
+  =#
+  for N in N_list
+    for Nm in Nm_list
+      for num_attributes in num_attributes_list
+        mutation_stddev = Nm/N
+        println("N: ",N,"  Nm ",Nm,"  mutation stddev: ",mutation_stddev)
+            sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
+               use_fit_locations, horiz_select, circular_variation, extreme_variation, mutation_stddev, ideal_max, ideal_min, ideal_range )
             Base.push!(sr_list_run, sr )
       end
     end

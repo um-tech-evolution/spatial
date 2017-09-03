@@ -29,7 +29,8 @@ function propsel( pop::Population, n::Int64, variant_table::Dict{Int64,variant_t
   end
   if fmax == 0.0
     # all elements have fitness zero
-    return
+    println("Warning: all elements have fitness zero")
+    return pop
   end
 
   N = length(pop)
@@ -63,6 +64,7 @@ function propsel!( pop::Population, variant_table::Dict{Int64,variant_type} )
   end
   if fmax == 0.0
     # all elements have fitness zero
+    println("Warning: all elements have fitness zero")
     return
   end
 
@@ -110,7 +112,8 @@ function reverse_propsel( pop::Population, n::Int64, variant_table::Dict{Int64,v
   end
   if fmax == 0.0
     # all elements have fitness zero
-    return
+    println("Warning: all elements have fitness zero")
+    return pop
   end
 
   selected = trues(N)
@@ -195,7 +198,8 @@ function negative_propsel( pop::Population, n::Int64, variant_table::Dict{Int64,
   end
   if fmax == 0.0
     # all elements have fitness zero
-    return
+    println("Warning: all elements have fitness zero")
+    return pop
   end
 
   N = length(pop)
