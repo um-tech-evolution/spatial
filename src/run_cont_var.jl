@@ -60,8 +60,7 @@ function writeheader( stream::IO, sr::spatial_result_type )
   write(stream,join(param_strings,"\n"),"\n")
   heads = [
     "N",
-    "num_subpops",
-    "subpop_size",
+    "N_mut",
     "mutation_stddev",
     #"num_emigrants",
     #"use_fit_locations",
@@ -73,10 +72,10 @@ function writeheader( stream::IO, sr::spatial_result_type )
     "mean_fitness",
     "fitness_coef_var",
     "attribute_coef_var",
-    "fit_diff_neg_count",
+    "fit_diff_neg_fract",
     "fit_diff_neg_neutral",
     "fit_diff_pos_neutral",
-    "fit_diff_pos_count"]
+    "fit_diff_pos_fract"]
   write(stream,join(heads,","),"\n")
 end
     
@@ -84,8 +83,7 @@ function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
   sum_fitdiff = Float64(sum( (sr.neg_count, sr.neg_neutral, sr.pos_neutral, sr.pos_count) ))
   line = Any[
           sr.N,
-          sr.num_subpops,
-          Int(ceil(sr.N/sr.num_subpops)),
+          sr.N*sr.mutation_stddev,
           sr.mutation_stddev,
           #sr.ne,
           #sr.use_fit_locations,
