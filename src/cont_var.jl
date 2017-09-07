@@ -1,25 +1,19 @@
 # ContVar structure simulation with horizontal transfer
 export spatial_simulation, fitness
 using DataStructures
-
-empty_variant = variant_type(-1,0.0,Vector{Float64}())
-#global fit_diff_list
-#vtbl = Dict{Int64,variant_type}()
+#=
+Recommended command line to run:
+>  julia -L ContVarEvolution.jl run_cv.jl configs/example1
+=#
 
 @doc """ function spatial_simulation()
   Wright-Fisher model simulation (as opposed to Moran model)
   Parameters:
     N     MetaPopulation size
     m     number of subpopulations   # for now, subpopulation size = N/m
-    mu    innovation probability
-    ngens number of generations
+    ngens number of generations after burn in
     num_attributes   number of quantitative attributes of a variant
-    copy_dfe   Distribution of selection coefficients for the reduction in fitness during copy
-    innov_dfe  Distribution of selection coefficients for innovations
-    horiz_dfe  Distribution of selection coefficients for the reduction in fitness during horiz transfer
     variant_table Keeps track fitnesses and variant parent and innovation ancestor
-    quantitative==true means individuals have quantitative attributes, fitness computed by distance from ideal
-    neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
 function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   fit_diff_counter = DataStructures.counter(Int64)
@@ -31,18 +25,15 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
-  #pop_list = Vector{PopList}()
   subpops = PopList()
   for j = 1:sr.num_subpops
     Base.push!( subpops, Population() )
     for i = 1:n
       Base.push!( subpops[j], new_innovation( id, sr.ideal, sr.num_attributes, variant_table ) )
     end
-    #println("subpops[",j,"]: ",subpops[j] )
   end
   previous_variant_id = 1
   current_variant_id = id[1]
-  #Base.push!(pop_list,deepcopy(subpops))
   previous_subpops = deepcopy(subpops)
   for g = 2:sr.ngens+int_burn_in
     after_burn_in = g > int_burn_in
@@ -53,40 +44,27 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
     for j = 1:sr.num_subpops
       for i = 1:n
         cp = copy_parent( previous_subpops[j][i], id, sr.ideal, variant_table, sr, after_burn_in, fit_diff_counter )
-        #println("j: ",j,"  i: ",i,"  pl: ",pop_list[g-1][j][i],"  cp: ",cp)
         subpops[j][i] = cp
       end
-      #println("g:",g," j:",j,"  ",[(v,variant_table[v].attributes) for v in subpops[j]])
-      #println("B g: ",g,"  j: ",j,"  subpops[j]: ",subpops[j])
       subpops[j] = propsel( subpops[j], n, variant_table )
-      #println("A g: ",g,"  j: ",j,"  subpops[j]: ",subpops[j])
     end
-    #Base.push!(pop_list,deepcopy(subpops))
     previous_subpops = deepcopy(subpops)
-    #print_pop(STDOUT,subpops,variant_table)
     if after_burn_in
-    #if g > int_burn_in
       (mmeans,vvars) = means(subpops,variant_table)
       cumm_means += mmeans
       cumm_variances += vvars
       avars = attr_vars(subpops,variant_table, sr.num_attributes )
       cumm_attr_vars += avars
-      #println("cumm_means: ",cumm_means)
-      #println("cumm_variances: ",cumm_variances)
     end
     clean_up_variant_table(previous_previous_variant_id,previous_variant_id,variant_table)
   end  # for g
   cumm_means /= sr.ngens
   cumm_variances /= sr.ngens
   cumm_attr_vars /= sr.ngens
-  #println("fitness mean: ",mean(cumm_means),"  variance: ",mean(cumm_variances),"  attribute_variance: ",mean(cumm_attr_vars))
   sr.fitness_mean = mean(cumm_means)
   sr.fitness_variance = mean(cumm_variances)
   sr.attribute_variance = mean(cumm_attr_vars)
-  #println("fit diff list: ",sr.fit_diff_list)
-  #bins = create_bins( sr.fit_diff_list, 1.0/sr.N )
   (sr.neg_count, sr.neg_neutral, sr.pos_neutral, sr.pos_count ) = summarize_bins( fit_diff_counter )
-  #println("fit_diff_counter: ",[(k,fit_diff_counter[k]) for k in sort(collect(keys(fit_diff_counter)))])
   return sr
 end
 
@@ -98,19 +76,22 @@ function fitness( attributes::Vector{Float64}, ideal::Vector{Float64} )
   for k = 1:length(attributes)
     sum += abs( attributes[k] - ideal[k] )
   end
-  #println("fitness: attributes: ",attributes,"  ideal: ",ideal," fit: ",1.0-sum/length(attributes))
-  result = 0.5-sum/length(attributes)
+  result = 1.0-sum/length(attributes)
+  if result < 0.0
+    #println("negative fitness")
+    #println("fitness: attributes: ",attributes,"  ideal: ",ideal," fit: ",result)
+    result = 0.0
+  end
   @assert result >= 0.0
   return result
-  return 1.0-sum/length(attributes)
 end
 
 function new_innovation( id::Vector{Int64}, ideal::Float64, num_attributes::Int64, variant_table::Dict{Int64,variant_type})
   i = id[1]
-  variant_table[i] = variant_type( i, 0.0, rand(num_attributes) )
-  #println("variant_table[i]: ",variant_table[i])
+  variant_table[i] = variant_type( i, 0.0, fill( ideal, num_attributes ) )
   variant_table[i].fitness = fitness( variant_table[i].attributes, fill( ideal, num_attributes)  )  
   id[1] += 1
+  #println("new innovation attributes: ",variant_table[i].attributes)
   i
 end
 
@@ -123,28 +104,18 @@ function copy_parent( v::Int64, id::Vector{Int64},
     sr::ContVarEvolution.spatial_result_type, after_burn_in::Bool, fit_diff_counter::DataStructures.Accumulator{Int64,Int64} )
   i = id[1]
   vt = variant_table[v]
-  vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev )
-  #println("copy_parent v: ",v,"  fit_loc_ind: ",fit_loc_ind)
-  #println("copy_parent v: ",v,"  attributes: ",vt.attributes,"  prev fitness: ",vt.fitness)
+  vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev, sr.additive_error )
   new_fit = fitness( vt.attributes, fill( ideal, sr.num_attributes) )
-  #println("copy_parent i: ",i,"  new_fit: ",new_fit)
-  #println("cp i: ",i,"  fit diff: ",new_fit-vt.fitness)
   if after_burn_in
-    #Base.push!(sr.fit_diff_list,new_fit-vt.fitness)
     increment_bins( fit_diff_counter, new_fit-vt.fitness, 1.0/sr.N )
   end
   variant_table[i] = deepcopy(vt)
   variant_table[i].fitness = new_fit
-  #variant_table[i] = variant_type(v,new_fit,vt.attributes)  # needs to be fixed
-  #println("v: ",v,"  i: ",i,"  new_fit: ",new_fit,"  vtbl[i]: ",variant_table[i].fitness)
   id[1] += 1
   return i
 end  
-
+#=
 function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64 )
-  #stddev = mutation_stddev()   # Standard deviation of mutational perturbations
-  #println("mutate attributes  mutation_stddev: ",mutation_stddev)
-  #attributes = min(1.0,max(0.0,attributes+mutation_stddev*randn(length(attributes))))
   for i = 1:length(attributes)
     #println("B attributes[",i,"]: ",attributes[i])
     attributes[i] += +mutation_stddev*randn()
@@ -160,6 +131,28 @@ function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float6
     #println("A attributes[",i,"]: ",attributes[i])
   end
   #println("attributes: ",attributes)
+  return attributes
+end
+=#
+
+function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64, additive_error::Bool )
+  if additive_error
+    for i = 1:length(attributes)
+      attributes[i] += +mutation_stddev*randn()
+    end
+  else
+    for i = 1:length(attributes)
+      @assert attributes[i] > 0.0
+      multiplier = (1.0+mutation_stddev*randn())
+      while multiplier <= 0.0
+        multiplier = (1.0+mutation_stddev*randn())
+      end
+      attributes[i] *= multiplier
+      if attributes[i] < 0.0
+        println("negative attribute with i=",i,": attribute: ",attribute[i])
+      end
+    end
+  end
   return attributes
 end
 

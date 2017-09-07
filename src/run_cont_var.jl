@@ -1,24 +1,23 @@
 #=
 Recommended command line to run:
->  julia -L ContVarEvolution.jl run.jl configs/example1
+>  julia -L ContVarEvolution.jl run_cv.jl configs/example1
 =#
 export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
-function spatial_result( N::Int64, num_subpops::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, burn_in::Float64,
-     mutation_stddev::Float64, ideal::Float64 )
-  return spatial_result_type( N, num_subpops, num_attributes, mu, ngens, burn_in,
-      mutation_stddev, ideal, 0.0, 0.0, 0.0,
-      0,0,0,0 )
+function spatial_result( N::Int64, num_subpops::Int64, num_attributes::Int64, ngens::Int64, burn_in::Float64,
+     mutation_stddev::Float64, ideal::Float64, additive_error::Bool )
+  return spatial_result_type( N, num_subpops, num_attributes, ngens, burn_in,
+      mutation_stddev, ideal, additive_error, 0.0, 0.0, 0.0, 0,0,0,0 )
 end
 
 function print_spatial_result( sr::spatial_result_type )
   println("N: ", sr.N)
   println("num_subpops: ", sr.num_subpops)
   println("num_attributes: ", sr.num_attributes)
-  println("mu: ", sr.mu)
   println("mutation_stddev: ", sr.mutation_stddev)
   println("ngens: ", sr.ngens)
+  println("additive_error: ", sr.additive_error)
   println("burn_in: ", sr.burn_in)
   println("fitness_mean: ", sr.fitness_mean)
   println("fitness_coef_var: ", sqrt(sr.fitness_variance)/sr.fitness_mean)
@@ -33,10 +32,9 @@ function writeheader( stream::IO, sr::spatial_result_type )
   param_strings = [
     "# $(string(Dates.today()))",
     #"# N=$(sr.N)",
-    #"# num_subpops_list=$(num_subpops_list)",
     #"# num_attributes=$(sr.num_attributes)",
-    "# mu=$(sr.mu)",
     "# ngens=$(sr.ngens)",
+    "# additive_error=$(sr.additive_error)",
     "# burn_in=$(sr.burn_in)",
     "# mutation_stddev=$(sr.mutation_stddev)",
     "# ideal=$(sr.ideal)"]

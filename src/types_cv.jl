@@ -12,15 +12,13 @@ end
 type spatial_result_type
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
-  #num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.
-  #ne::Int64  # number of emmigrants in horizontal transfer
   num_attributes::Int64  # number of attributes of a variant
-  mu::Float64     # innovation rate
+  #mu::Float64     # innovation rate
   ngens::Int64  # number of generations after burn-in
   burn_in::Float64
-  #horiz_select::Bool       # Whether to use selection during horzontal transfer
   mutation_stddev::Float64  # standard deviation of mutation distribution of mutation perturbations
   ideal::Float64      #maximum ideal value 
+  additive_error::Bool       # Whether to use additive or multiplicative copy error
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64
@@ -28,6 +26,5 @@ type spatial_result_type
   neg_neutral::Int64      # Number of fitness differences >= -1.0/N  and < 0.0
   pos_neutral::Int64     # Number of fitness differences >= 0.0 and < 1.0/N
   pos_count::Int64        # Number of fitness differences >= 1.0/N
-  #fit_diff_list::Vector{Float64}
 end
 

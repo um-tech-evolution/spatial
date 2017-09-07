@@ -18,7 +18,6 @@ type spatial_result_type
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
   num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.
-  ne::Int64  # number of emmigrants in horizontal transfer
   num_attributes::Int64  # number of attributes of a variant
   mu::Float64     # innovation rate
   ngens::Int64  # number of generations after burn-in
