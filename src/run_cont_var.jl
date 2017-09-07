@@ -5,9 +5,9 @@ Recommended command line to run:
 export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
-function spatial_result( N::Int64, num_subpops::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, burn_in::Float64,
+function spatial_result( N::Int64, num_subpops::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, burn_in::Float64,
      mutation_stddev::Float64, ideal::Float64 )
-  return spatial_result_type( N, num_subpops, ne, num_attributes, mu, ngens, burn_in,
+  return spatial_result_type( N, num_subpops, num_attributes, mu, ngens, burn_in,
       mutation_stddev, ideal, 0.0, 0.0, 0.0,
       0,0,0,0 )
 end
