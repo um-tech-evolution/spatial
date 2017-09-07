@@ -1,19 +1,19 @@
 using ContVarEvolution
 
 function run_trials( simname::AbstractString ) 
-  circular_variation = extreme_variation = false
+  #circular_variation = extreme_variation = false
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
-  sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,num_fit_locations,ne,num_attributes_list[1], mu, ngens, burn_in,
-      use_fit_locations, horiz_select, circular_variation, extreme_variation, N_mut_list[1]/N_list[1]/100, ideal_max, ideal_min, ideal_range )
+  sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,ne,num_attributes_list[1], mu, ngens, burn_in,
+      N_mut_list[1]/N_list[1]/100, ideal )
   sr_list_run = ContVarEvolution.spatial_result_type[]
   trial=1
   #=
   for N in N_list
     for num_attributes in num_attributes_list
       for mutation_stddev in mutation_stddev_list
-            sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
-               use_fit_locations, horiz_select, circular_variation, extreme_variation, mutation_stddev, ideal_max, ideal_min, ideal_range )
+            sr = ContVarEvolution.spatial_result(N,num_subpops,ne,num_attributes, mu, ngens, burn_in,
+               mutation_stddev, ideal )
             Base.push!(sr_list_run, sr )
       end
     end
@@ -24,14 +24,14 @@ function run_trials( simname::AbstractString )
       for num_attributes in num_attributes_list
         mutation_stddev = N_mut/N
         println("N: ",N,"  N_mut ",N_mut,"  mutation stddev: ",mutation_stddev)
-            sr = ContVarEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
-               use_fit_locations, horiz_select, circular_variation, extreme_variation, mutation_stddev, ideal_max, ideal_min, ideal_range )
+            sr = ContVarEvolution.spatial_result(N,num_subpops,ne,num_attributes, mu, ngens, burn_in,
+               mutation_stddev, ideal )
             Base.push!(sr_list_run, sr )
       end
     end
   end
   println("===================================")
-  sr_list_result = pmap(spatial_simulation, sr_list_run )
+  sr_list_result = map(spatial_simulation, sr_list_run )
   trial = 1
   writeheader( STDOUT, sr )
   writeheader( stream, sr )
