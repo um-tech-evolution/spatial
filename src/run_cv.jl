@@ -5,7 +5,7 @@ function run_trials( simname::AbstractString )
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
   sr = ContVarEvolution.spatial_result(N_list[1],num_subpops,num_attributes_list[1], ngens, burn_in,
-      N_mut_list[1]/N_list[1]/100, ideal, additive_error )
+      N_mut_list[1]/N_list[1]/100, ideal, wrap_attributes, additive_error )
   sr_list_run = ContVarEvolution.spatial_result_type[]
   trial=1
   #=
@@ -13,7 +13,7 @@ function run_trials( simname::AbstractString )
     for num_attributes in num_attributes_list
       for mutation_stddev in mutation_stddev_list
             sr = ContVarEvolution.spatial_result(N,num_subpops,num_attributes, ngens, burn_in,
-               mutation_stddev, ideal, additive_error )
+               mutation_stddev, ideal, wrap_attributes, additive_error )
             Base.push!(sr_list_run, sr )
       end
     end
@@ -25,7 +25,7 @@ function run_trials( simname::AbstractString )
         mutation_stddev = N_mut/N
         println("N: ",N,"  N_mut ",N_mut,"  mutation stddev: ",mutation_stddev)
             sr = ContVarEvolution.spatial_result(N,num_subpops,num_attributes, ngens, burn_in,
-               mutation_stddev, ideal, additive_error )
+               mutation_stddev, ideal, wrap_attributes, additive_error )
             Base.push!(sr_list_run, sr )
       end
     end

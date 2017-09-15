@@ -6,9 +6,9 @@ export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
 function spatial_result( N::Int64, num_subpops::Int64, num_attributes::Int64, ngens::Int64, burn_in::Float64,
-     mutation_stddev::Float64, ideal::Float64, additive_error::Bool )
+     mutation_stddev::Float64, ideal::Float64, wrap_attributes::Bool, additive_error::Bool )
   return spatial_result_type( N, num_subpops, num_attributes, ngens, burn_in,
-      mutation_stddev, ideal, additive_error, 0.0, 0.0, 0.0, 0,0,0,0 )
+      mutation_stddev, ideal, wrap_attributes, additive_error, 0.0, 0.0, 0.0, 0,0,0,0 )
 end
 
 function print_spatial_result( sr::spatial_result_type )
@@ -17,6 +17,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("num_attributes: ", sr.num_attributes)
   println("mutation_stddev: ", sr.mutation_stddev)
   println("ngens: ", sr.ngens)
+  println("wrap attributes: ", sr.wrap_attributes)
   println("additive_error: ", sr.additive_error)
   println("burn_in: ", sr.burn_in)
   println("fitness_mean: ", sr.fitness_mean)
@@ -34,6 +35,7 @@ function writeheader( stream::IO, sr::spatial_result_type )
     #"# N=$(sr.N)",
     #"# num_attributes=$(sr.num_attributes)",
     "# ngens=$(sr.ngens)",
+    "# wrap_attributes =$(sr.wrap_attributes)",
     "# additive_error=$(sr.additive_error)",
     "# burn_in=$(sr.burn_in)",
     "# mutation_stddev=$(sr.mutation_stddev)",

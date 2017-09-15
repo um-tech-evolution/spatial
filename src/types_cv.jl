@@ -18,7 +18,8 @@ type spatial_result_type
   burn_in::Float64
   mutation_stddev::Float64  # standard deviation of mutation distribution of mutation perturbations
   ideal::Float64      #maximum ideal value 
-  additive_error::Bool       # Whether to use additive or multiplicative copy error
+  wrap_attributes::Bool      # Keep attributes within the unit interval by wrapping around (so that attribute space is toroidal)
+  additive_error::Bool       # If true, use additive rather than multiplicative copy error
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64

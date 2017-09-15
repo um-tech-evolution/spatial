@@ -104,7 +104,7 @@ function copy_parent( v::Int64, id::Vector{Int64},
     sr::ContVarEvolution.spatial_result_type, after_burn_in::Bool, fit_diff_counter::DataStructures.Accumulator{Int64,Int64} )
   i = id[1]
   vt = variant_table[v]
-  vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev, sr.additive_error )
+  vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev, sr.wrap_attributes, sr.additive_error )
   new_fit = fitness( vt.attributes, fill( ideal, sr.num_attributes) )
   if after_burn_in
     increment_bins( fit_diff_counter, new_fit-vt.fitness, 1.0/sr.N )
@@ -114,46 +114,45 @@ function copy_parent( v::Int64, id::Vector{Int64},
   id[1] += 1
   return i
 end  
-#=
-function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64 )
-  for i = 1:length(attributes)
-    #println("B attributes[",i,"]: ",attributes[i])
-    attributes[i] += +mutation_stddev*randn()
-    if attributes[i] < 0
-        attributes[i] += 1.0
-        #println("wrapped up: ",attributes[i])
-    end
-    if attributes[i] > 1.0
-        attributes[i] -= 1.0
-        #println("wrapped down: ",attributes[i])
-    end
-    attributes[i] = min(1.0,max(0.0,attributes[i]))
-    #println("A attributes[",i,"]: ",attributes[i])
-  end
-  #println("attributes: ",attributes)
-  return attributes
-end
-=#
 
-function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64, additive_error::Bool )
-  if additive_error
+function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float64, wrap_attributes::Bool, additive_error::Bool )
+  if wrap_attributes
     for i = 1:length(attributes)
+      #println("B attributes[",i,"]: ",attributes[i])
       attributes[i] += +mutation_stddev*randn()
+      if attributes[i] < 0
+          attributes[i] += 1.0
+          #println("wrapped up: ",attributes[i])
+      end
+      if attributes[i] > 1.0
+          attributes[i] -= 1.0
+          #println("wrapped down: ",attributes[i])
+      end
+      attributes[i] = min(1.0,max(0.0,attributes[i]))
+      #println("A attributes[",i,"]: ",attributes[i])
     end
+    #println("attributes: ",attributes)
+    return attributes
   else
-    for i = 1:length(attributes)
-      @assert attributes[i] > 0.0
-      multiplier = (1.0+mutation_stddev*randn())
-      while multiplier <= 0.0
-        multiplier = (1.0+mutation_stddev*randn())
+    if additive_error
+      for i = 1:length(attributes)
+        attributes[i] += +mutation_stddev*randn()
       end
-      attributes[i] *= multiplier
-      if attributes[i] < 0.0
-        println("negative attribute with i=",i,": attribute: ",attribute[i])
+    else
+      for i = 1:length(attributes)
+        @assert attributes[i] > 0.0
+        multiplier = (1.0+mutation_stddev*randn())
+        while multiplier <= 0.0
+          multiplier = (1.0+mutation_stddev*randn())
+        end
+        attributes[i] *= multiplier
+        if attributes[i] < 0.0
+          println("negative attribute with i=",i,": attribute: ",attribute[i])
+        end
       end
     end
+    return attributes
   end
-  return attributes
 end
 
 function print_subpop( subpop::Vector{Int64}, variant_table::Dict{Int64,variant_type} )

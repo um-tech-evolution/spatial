@@ -15,4 +15,5 @@ const num_subpops = 1
 const ngens = 2       # Generations after burn-in
 const burn_in= 0.1    # generations of burn_in as a multiple of N
 const ideal = 0.5
+const wrap_attributes=true # wrap attribute values to stay within the interval [0,1]
 const additive_error=true  # use additive error when mutating attributes as opposed to mulitiplicative error
