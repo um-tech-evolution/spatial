@@ -6,9 +6,9 @@ export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
 function spatial_result( N::Int64, num_subpops::Int64, num_attributes::Int64, ngens::Int64, burn_in::Float64,
-     mutation_stddev::Float64, ideal::Float64, wrap_attributes::Bool, additive_error::Bool )
+     mutation_stddev::Float64, ideal::Float64, wrap_attributes::Bool, additive_error::Bool, neutral::Bool=false )
   return spatial_result_type( N, num_subpops, num_attributes, ngens, burn_in,
-      mutation_stddev, ideal, wrap_attributes, additive_error, 0.0, 0.0, 0.0, 0,0,0,0 )
+      mutation_stddev, ideal, wrap_attributes, additive_error, neutral, 0.0, 0.0, 0.0, 0,0,0,0 )
 end
 
 function print_spatial_result( sr::spatial_result_type )
@@ -20,6 +20,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("wrap attributes: ", sr.wrap_attributes)
   println("additive_error: ", sr.additive_error)
   println("burn_in: ", sr.burn_in)
+  println("neutral: ", sr.neutral )
   println("fitness_mean: ", sr.fitness_mean)
   println("fitness_coef_var: ", sqrt(sr.fitness_variance)/sr.fitness_mean)
   println("attiribute_coef_var: ", sqrt(sr.attribute_variance)/sr.fitness_mean)
@@ -39,6 +40,7 @@ function writeheader( stream::IO, sr::spatial_result_type )
     "# additive_error=$(sr.additive_error)",
     "# burn_in=$(sr.burn_in)",
     "# mutation_stddev=$(sr.mutation_stddev)",
+    "# neutral=$(sr.neutral)",
     "# ideal=$(sr.ideal)"]
 
   write(stream,join(param_strings,"\n"),"\n")

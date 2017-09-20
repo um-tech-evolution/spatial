@@ -19,6 +19,7 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   fit_diff_counter = DataStructures.counter(Int64)
   variant_table = Dict{Int64,variant_type}()
   int_burn_in = Int(round(sr.burn_in*sr.N+50.0))  # reduce for testing
+  int_burn_in = 0
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
   println("N: ",sr.N,"  mutation_stddev: ",sr.mutation_stddev,"  num_attributes: ",sr.num_attributes)
@@ -29,9 +30,16 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   for j = 1:sr.num_subpops
     Base.push!( subpops, Population() )
     for i = 1:n
-      Base.push!( subpops[j], new_innovation( id, sr.ideal, sr.num_attributes, variant_table ) )
+      Base.push!( subpops[j], new_innovation( id, sr.ideal, sr.num_attributes, variant_table, sr.neutral ) )
     end
   end
+  #=
+  println("subpop: ", subpops[1] )
+  for k in subpops[1]
+    attribs = variant_table[k].attributes
+    println("k: ",k,"  fitness: ",variant_table[k].fitness,"  min: ",minimum(attribs),"  max: ",maximum(attribs),"  mean: ",mean(attribs))
+  end
+  =#
   previous_variant_id = 1
   current_variant_id = id[1]
   previous_subpops = deepcopy(subpops)
@@ -55,9 +63,18 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
       cumm_variances += vvars
       avars = attr_vars(subpops,variant_table, sr.num_attributes )
       cumm_attr_vars += avars
+      #println("g: ",g,"  mmeans: ",mmeans,"  avars: ", avars, "  cumm_variances: ", cumm_variances)
+      attribs = [variant_table[subpops[1][k]].attributes[1] for k = 1:sr.N]
+      #println("g: ",g,"  attribs: ",attribs)
+      #println("g: ",g,"  mean: ",mean(attribs),"  avars: ", avars)
     end
     clean_up_variant_table(previous_previous_variant_id,previous_variant_id,variant_table)
   end  # for g
+  #println("subpop: ", subpops[1] )
+  for k in subpops[1]
+    attribs = variant_table[k].attributes
+    #println("k: ",k,"  fitness: ",variant_table[k].fitness,"  min: ",minimum(attribs),"  max: ",maximum(attribs),"  mean: ",mean(attribs))
+  end
   cumm_means /= sr.ngens
   cumm_variances /= sr.ngens
   cumm_attr_vars /= sr.ngens
@@ -68,9 +85,12 @@ function spatial_simulation( sr::ContVarEvolution.spatial_result_type )
   return sr
 end
 
-function fitness( attributes::Vector{Float64}, ideal::Vector{Float64} )
+function fitness( attributes::Vector{Float64}, ideal::Vector{Float64}, neutral::Bool )
   if length(attributes) != length(ideal)
     error("length(attributes) must equal length(ideal) in fitness")
+  end
+  if neutral
+    return 1.0
   end
   sum = 0.0
   for k = 1:length(attributes)
@@ -86,10 +106,10 @@ function fitness( attributes::Vector{Float64}, ideal::Vector{Float64} )
   return result
 end
 
-function new_innovation( id::Vector{Int64}, ideal::Float64, num_attributes::Int64, variant_table::Dict{Int64,variant_type})
+function new_innovation( id::Vector{Int64}, ideal::Float64, num_attributes::Int64, variant_table::Dict{Int64,variant_type}, neutral::Bool )
   i = id[1]
   variant_table[i] = variant_type( i, 0.0, fill( ideal, num_attributes ) )
-  variant_table[i].fitness = fitness( variant_table[i].attributes, fill( ideal, num_attributes)  )  
+  variant_table[i].fitness = fitness( variant_table[i].attributes, fill( ideal, num_attributes), neutral )  
   id[1] += 1
   #println("new innovation attributes: ",variant_table[i].attributes)
   i
@@ -105,7 +125,7 @@ function copy_parent( v::Int64, id::Vector{Int64},
   i = id[1]
   vt = variant_table[v]
   vt.attributes = mutate_attributes( vt.attributes, sr.mutation_stddev, sr.wrap_attributes, sr.additive_error )
-  new_fit = fitness( vt.attributes, fill( ideal, sr.num_attributes) )
+  new_fit = fitness( vt.attributes, fill( ideal, sr.num_attributes), sr.neutral )
   if after_burn_in
     increment_bins( fit_diff_counter, new_fit-vt.fitness, 1.0/sr.N )
   end
@@ -140,9 +160,13 @@ function mutate_attributes( attributes::Vector{Float64}, mutation_stddev::Float6
       end
     else
       for i = 1:length(attributes)
-        @assert attributes[i] > 0.0
+        if attributes[i] <= 0.0
+          println("neg attribute: ",attributes[i])
+          attributes[i] = 1.0e-6
+        end
         multiplier = (1.0+mutation_stddev*randn())
-        while multiplier <= 0.0
+        while multiplier <= 1.0e-6
+          println("neg multiplier")
           multiplier = (1.0+mutation_stddev*randn())
         end
         attributes[i] *= multiplier
@@ -210,6 +234,7 @@ function fit_loc_index(N,num_subpops,num_fit_locs,j,i)
   return 1
 end
 
+#= Duplicates a function in bin_data.jl
 # Create a dictionary that bins a real-valued vector
 function create_bins( vect::Vector{Float64}, cutoff::Float64 )
   bins = DataStructures.counter(Int64)
@@ -219,6 +244,7 @@ function create_bins( vect::Vector{Float64}, cutoff::Float64 )
   end
   bins
 end
+=#
 
 function clean_up_variant_table( previous_variant_id::Int64, previous_previous_variant_id::Int64,
     variant_table::Dict{Int64,variant_type} )

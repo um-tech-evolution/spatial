@@ -9,6 +9,7 @@ const num_attributes_list = [5]        # number attributes for quantitative repr
 const ngens = 5       # Generations after burn-in
 const burn_in= 2.0    # generations of burn_in as a multiple of N
 const ideal = 0.5
+const neutral=false
 const wrap_attributes=false # wrap attribute values to stay within the interval [0,1]
 const additive_error=true
 #const additive_error=false  # use additive error when mutating attributes as opposed to mulitiplicative error

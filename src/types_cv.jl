@@ -20,6 +20,7 @@ type spatial_result_type
   ideal::Float64      #maximum ideal value 
   wrap_attributes::Bool      # Keep attributes within the unit interval by wrapping around (so that attribute space is toroidal)
   additive_error::Bool       # If true, use additive rather than multiplicative copy error
+  neutral::Bool              # If true, fitness = 1
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64
