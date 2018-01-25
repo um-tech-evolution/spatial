@@ -18,6 +18,7 @@ type spatial_result_type
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
   num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.
+  ne::Int64       # num emigrants
   num_attributes::Int64  # number of attributes of a variant
   mu::Float64     # innovation rate
   ngens::Int64  # number of generations after burn-in
@@ -30,8 +31,12 @@ type spatial_result_type
   ideal_max::Float64      # maximum ideal value for circular and extreme ideal values
   ideal_min::Float64      # minimum ideal value for circular and extreme ideal values
   ideal_range::Float64    # range of ideal values for circular and extreme ideal 
+  fit_slope::Float64      # If fit_slope> 0.0, use inverse fitness with this fit_slope.  Otherwise, linear fitness
+  additive_error::Bool    # If true, use additive error with wrapping.  If false, use multiplicative copy error without wrapping
+  neutral::Bool           # if true, no selection, do not run proportional selection
   fitness_mean::Float64
   fitness_variance::Float64
   attribute_variance::Float64
+  attribute_coef_var::Float64
 end
 

@@ -1,11 +1,13 @@
 using SpatialEvolution
+# Suggested command-line execution:  >  julia -L SpatialEvolution.jl run.jl configs/example1
 
 function run_trials( simname::AbstractString ) 
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
   num_fit_locations = use_fit_locations_list[1] ? maximum(num_subpops_list) : num_subpops_list[1]
   sr = SpatialEvolution.spatial_result(N_list[1],num_subpops_list[1],num_fit_locations,ne_list[1],num_attributes, mu, ngens, burn_in,
-      use_fit_locations_list[1], horiz_select, circular_variation, extreme_variation_list[1], normal_stddev, ideal_max, ideal_min, ideal_range )
+      use_fit_locations_list[1], horiz_select_list[1], circular_variation, extreme_variation_list[1], normal_stddev, 
+      ideal_max, ideal_min, ideal_range, fit_slope, additive_error, neutral )
   sr_list_run = SpatialEvolution.spatial_result_type[]
   trial=1
   for N in N_list
@@ -13,17 +15,17 @@ function run_trials( simname::AbstractString )
       for ne in ne_list
         for use_fit_locations in use_fit_locations_list
           #for extreme_variation in extreme_variation_list
-          #for horiz_select in horiz_select_list
+          for horiz_select in horiz_select_list
             circular_variation = extreme_variation = false
-            num_fit_locations = use_fit_locations ? maximum(num_subpops_list) : num_subpops_list[1]
             num_fit_locations = use_fit_locations ? maximum(num_subpops_list) : num_subpops
-            #println("num_fit_locations: ",num_fit_locations)
+            println("num_subpops: ",num_subpops,"  num_fit_locations: ",num_fit_locations)
             sr = SpatialEvolution.spatial_result(N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
-               use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range )
+                use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range,
+                fit_slope, additive_error, neutral )
             Base.push!(sr_list_run, sr )
             #println("= = = = = = = =")
             #writerow(STDOUT,trial,sr)
-          #end
+          end
         end
       end
     end

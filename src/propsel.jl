@@ -1,15 +1,8 @@
+# Proportional selection using the stohcastic acceptance algorithm of Lipowski and Lipowska
+# Fitnesses are defined in a variant table.
 #using DataStructures
 export propsel, propsel!, reverse_propsel
 
-@doc """ function propsel()
-Apply proportional selection to Population pop using fitness, 
-and return the result.  
-"""
-function propsel( pop::Population, variant_table::Dict{Int64,variant_type} )
-  new_pop = deepcopy(pop)
-  propsel!( new_pop, variant_table )
-  new_pop
-end
 
 @doc """ function propsel()
 Apply proportional selection to Population pop to generate a new population of size n.
@@ -44,42 +37,6 @@ function propsel( pop::Population, n::Int64, variant_table::Dict{Int64,variant_t
     end
   end
   new_pop
-end
-
-
-
-@doc """function propsel!()
-Conduct proportional selection in-place.  
-"""
-function propsel!( pop::Population, variant_table::Dict{Int64,variant_type} )
-  fmax = 0.0
-  for v in pop
-    fitv = variant_table[v].fitness
-    if fitv < 0.0
-      error("negative fitness in propsel!")
-    end
-    if fitv > fmax
-      fmax = fitv
-    end
-  end
-  if fmax == 0.0
-    # all elements have fitness zero
-    println("Warning: all elements have fitness zero")
-    return
-  end
-
-  n = length(pop)
-  selected = zeros(Int64, n)
-  k = 0
-  while k < n
-    i = rand(1:n)
-    w = variant_table[v].fitness
-    if rand() < w
-      selected[k + 1] = i
-      k += 1
-    end
-  end
-  pop[:] = [ pop[selected[i]] for i = 1:n ]
 end
 
 @doc """function reverse_propsel()
