@@ -5,13 +5,20 @@ Recommended command line to run:
 export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
-function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, burn_in::Float64,
-    use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
-      ideal_max, ideal_min, ideal_range )
-  return spatial_result_type( N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, burn_in,
-    use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 0.0, 0.0, 0.0 )
+function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, 
+    burn_in::Number, use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
+      ideal_max::Float64, ideal_min::Float64, ideal_range::Float64, fit_slope::Float64, additive_error::Bool, neutral::Bool )
+  if typeof(burn_in) == Int64
+    int_burn_in = burn_in
+  else
+    int_burn_in = Int(round(burn_in*N))   # Same as March 2017 
+  end
+  return spatial_result_type( N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
+    use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 
+    fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
 
+#=
 function print_spatial_result( sr::spatial_result_type )
   println("N: ", sr.N)
   println("num_subpops: ", sr.num_subpops)
@@ -30,6 +37,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("fitness_variance: ", sr.fitness_variance)
   println("attiribute_variance: ", sr.attribute_variance)
 end
+=#
 
 function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_result_type )
   param_strings = [
@@ -38,16 +46,20 @@ function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_r
     "# num_subpops_list=$(num_subpops_list)",
     #"# num_attributes=$(sr.num_attributes)",
     "# mu=$(sr.mu)",
-    "# horiz_select=$(sr.horiz_select)",
+    #"# horiz_select=$(sr.horiz_select)",
     #"# num_emmigrants=$(sr.ne)",
     "# ngens=$(sr.ngens)",
     #"# circular_variation=$(sr.circular_variation)",
     #"# extreme_variation=$(sr.extreme_variation)",
-    "# burn_in=$(sr.burn_in)",
+    "# int_burn_in=$(sr.int_burn_in)",
     "# normal_stddev=$(sr.normal_stddev)",
     "# ideal_max=$(sr.ideal_max)",
     "# ideal_min=$(sr.ideal_min)",
-    "# ideal_range=$(sr.ideal_range)"]
+    "# ideal_range=$(sr.ideal_range)",
+    "# fit_slope=$(sr.fit_slope)",
+    "# additive_error=$(sr.additive_error)",
+    "# neutral=$(sr.neutral)"
+  ]
 
   write(stream,join(param_strings,"\n"),"\n")
   heads = [
@@ -61,10 +73,12 @@ function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_r
     "num_attributes",
     "circular_variation",
     "extreme_variation",
-    #"horiz_select",
+    "horiz_select",
     "mean_fitness",
-    "stddev_fitness",
-    "attribute_stddev"]
+    "fitness_coef_var",
+    "attribute_variance",
+    "attribute_coef_var"
+  ]
   write(stream,join(heads,","),"\n")
 end
     
@@ -80,10 +94,13 @@ function writerow( stream::IO, trial::Int64, sr::spatial_result_type )
           sr.num_attributes,
           sr.circular_variation,
           sr.extreme_variation,
-          #sr.horiz_select,
+          sr.horiz_select,
           sr.fitness_mean,
-          sqrt(sr.fitness_variance),
-          sqrt(sr.attribute_variance)]
+          sqrt(sr.fitness_variance)/sr.fitness_mean,
+          #sqrt(sr.attribute_variance)/sr.fitness_mean]
+          sr.attribute_variance,
+          sr.attribute_coef_var
+    ]
   write(stream,join(line,","),"\n")
 end
 

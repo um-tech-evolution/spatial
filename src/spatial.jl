@@ -26,9 +26,8 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
   #println("fitness_locations: ",fitness_locations)
-  #int_burn_in = Int(round(sr.burn_in*N+50.0))
-  int_burn_in = Int(round(sr.burn_in*sr.N))   # reduce for testing
-  println("int_burn_in: ",int_burn_in)
+  #int_burn_in = Int(round(sr.burn_in*sr.N))  # moved to run_spatial.jl 
+  #println("int_burn_in: ",sr.int_burn_in)
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
   #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.ne)
@@ -46,19 +45,19 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
       Base.push!( subpops[j], new_innovation( id, 
           fit_loc_ind, sr.num_attributes, sr.neutral, sr.fit_slope, variant_table, fitness_locations ) )
     end
-    println("subpops[",j,"]: ",subpops[j], "  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ] )
+    #println("subpops[",j,"]: ",subpops[j], "  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ] )
   end
   previous_variant_id = 1
   current_variant_id = id[1]
   #Base.push!(pop_list,deepcopy(subpops))
   previous_subpops = deepcopy(subpops)
   count_gens = 0
-  for g = 1:sr.ngens+int_burn_in
-    println("before g: ",g,"  pop: ",subpops[1],"  pop attr: ",[ variant_table[subpops[1][i]].attributes[1] for i = 1:n ])
+  for g = 1:sr.ngens+sr.int_burn_in
+    #println("before g: ",g,"  pop: ",subpops[1],"  pop attr: ",[ variant_table[subpops[1][i]].attributes[1] for i = 1:n ])
     previous_previous_variant_id = previous_variant_id
     previous_variant_id = current_variant_id
     current_variant_id = id[1]
-    println("g: ",g,"  count_gens: ",count_gens)
+    #println("g: ",g,"  count_gens: ",count_gens)
     for j = 1:sr.num_subpops
       for i = 1:n
         fit_loc_ind = fit_loc_index(sr.N,sr.num_subpops,sr.num_fit_locations,j,i)
@@ -66,15 +65,15 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
             variant_table, fitness_locations )
         subpops[j][i] = cp
       end
-      println("g:",g," j:",j,"  ",[(v,variant_table[v].attributes) for v in subpops[j]])
+      #println("g:",g," j:",j,"  ",[(v,variant_table[v].attributes) for v in subpops[j]])
       if !sr.neutral
         subpops[j] = propsel( subpops[j], n, variant_table )
       else # Wright-Fisher copy
         r = rand(1:n,n)
         subpops[j] = subpops[j][ r ]
       end
-      println("g: ",g,"  pop: ",subpops[j],"  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ])
-      println("g: ",g,"  pop: ",subpops[j],"  pop fitnesses: ",[ variant_table[subpops[j][i]].fitness for i = 1:n ])
+      #println("g: ",g,"  pop: ",subpops[j],"  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ])
+      #println("g: ",g,"  pop: ",subpops[j],"  pop fitnesses: ",[ variant_table[subpops[j][i]].fitness for i = 1:n ])
     end
     if sr.ne > 0 && g%2==0
       horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations, sr.fit_slope,
@@ -85,21 +84,21 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
     end
     previous_subpops = deepcopy(subpops)
     #print_pop(STDOUT,subpops,variant_table)
-    if g > int_burn_in
+    if g > sr.int_burn_in
       count_gens += 1
       (mmeans,vvars) = means(subpops,variant_table)
       cumm_means += mmeans
-      println("mmeans: ",mmeans,"  cum_means: ",cumm_means)
+      #println("mmeans: ",mmeans,"  cum_means: ",cumm_means)
       cumm_variances += vvars
       avars = attr_vars(subpops,variant_table, sr.num_attributes )
       avg_attr_coef_vars = attr_coef_vars(subpops,variant_table, sr.num_attributes )
-      println("avg_attr_coef_vars: ",avg_attr_coef_vars)
+      #println("avg_attr_coef_vars: ",avg_attr_coef_vars)
       cumm_attr_vars += avars
       cumm_attr_coef_vars += avg_attr_coef_vars
       #println("cumm_means: ",cumm_means)
       #println("cumm_variances: ",cumm_variances)
       #println("cumm_attr_vars: ",cumm_attr_vars)
-      println("cumm_attr_coef_vars: ",cumm_attr_coef_vars)
+      #println("cumm_attr_coef_vars: ",cumm_attr_coef_vars)
     end
     clean_up_variant_table(previous_previous_variant_id,previous_variant_id,variant_table)
   end  # for g
@@ -107,7 +106,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   cumm_variances /= count_gens
   cumm_attr_vars /= count_gens
   cumm_attr_coef_vars /= count_gens
-  println("fitness mean: ",mean(cumm_means),"  variance: ",mean(cumm_variances),"  attribute_variance: ",mean(cumm_attr_vars))
+  #println("fitness mean: ",mean(cumm_means),"  variance: ",mean(cumm_variances),"  attribute_variance: ",mean(cumm_attr_vars))
   sr.fitness_mean = mean(cumm_means)
   sr.fitness_variance = mean(cumm_variances)
   sr.attribute_variance = mean(cumm_attr_vars)
@@ -138,13 +137,13 @@ end
 function new_innovation( id::Vector{Int64}, 
     fit_loc_ind::Int64, num_attributes::Int64, neutral::Bool, fit_slope::Float64,
     variant_table::Dict{Int64,variant_type}, fitness_locations; quantitative::Bool=true )
-  println("new innov: ideal: ",fitness_locations[fit_loc_ind].ideal)
+  #println("new innov: ideal: ",fitness_locations[fit_loc_ind].ideal)
   i = id[1]
   if quantitative
-    println("new innovation i: ",i,"  fit_loc_ind:",fit_loc_ind,"  num_attributes: ",num_attributes )
+    #println("new innovation i: ",i,"  fit_loc_ind:",fit_loc_ind,"  num_attributes: ",num_attributes )
     #variant_table[i] = variant_type( i, 0.0, fit_loc_ind, rand(num_attributes) )
     variant_table[i] = variant_type( i, 0.0, fit_loc_ind, fitness_locations[fit_loc_ind].ideal )
-    println("variant_table[i]: ",variant_table[i])
+    #println("variant_table[i]: ",variant_table[i])
     variant_table[i].fitness = fitness( variant_table[i].attributes, fitness_locations[fit_loc_ind].ideal, neutral, fit_slope )  
   end
   id[1] += 1
@@ -198,18 +197,18 @@ function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64,
   else  # multiplicative copy error
     for i = 1:length(new_attributes)
       if new_attributes[i] <= 0.0
-        println("neg attribute: ",new_attributes[i])
+        #println("neg attribute: ",new_attributes[i])
         new_attributes[i] = 1.0e-6
       end
       multiplier = (1.0+normal_stddev*randn())
-      println("multiplier: ",multiplier)
+      #println("multiplier: ",multiplier)
       while multiplier <= 1.0e-6
-        println("neg multiplier")
+        #println("neg multiplier")
         multiplier = (1.0+normal_stddev*randn())
       end
       new_attributes[i] *= multiplier
       if new_attributes[i] < 0.0
-        println("negative attribute with i=",i,": attribute: ",new_attributes[i])
+        #println("negative attribute with i=",i,": attribute: ",new_attributes[i])
       end
     end
   end
@@ -235,7 +234,7 @@ end
 function initialize_fitness_locations( sr::SpatialEvolution.spatial_result_type )
   fitness_locations = [ fitness_location_type( zeros(Float64,sr.num_attributes) ) for j = 1:sr.num_fit_locations ]
   if !sr.circular_variation && !sr.extreme_variation  # random variation---no relationship to subpop number
-    println("init sr.circular_variation: ",sr.circular_variation,"  sr.extreme_variation: ",sr.extreme_variation)
+    #println("init sr.circular_variation: ",sr.circular_variation,"  sr.extreme_variation: ",sr.extreme_variation)
     for j = 1:sr.num_fit_locations
       for k = 1:sr.num_attributes
         if sr.ideal_min != sr.ideal_max
@@ -288,7 +287,7 @@ function horiz_transfer_circular!( N::Int64, m::Int64, num_emmigrants::Int64, su
   num_attributes = length(variant_table[subpops[1][1]].attributes)
   num_fit_locations = length(fitness_locations)
   #println("ht num_fit_locations: ",num_fit_locations)
-  println("horiz_transfer_circular! forward: ",forward,"  num_attributes: ",num_attributes)
+  #println("horiz_transfer_circular! forward: ",forward,"  num_attributes: ",num_attributes)
   emmigrants = PopList()
   for j = 1:m
     if emmigrant_select
@@ -378,7 +377,7 @@ function attr_vars( subpops::PopList, variant_table::Dict{Int64,variant_type}, n
     ave_vars[i] = mean(att_vars)
     i += 1
   end
-  println("ave_vars: ",ave_vars)
+  #println("ave_vars: ",ave_vars)
   return ave_vars
 end
 
@@ -388,7 +387,7 @@ function attr_coef_vars( subpops::PopList, variant_table::Dict{Int64,variant_typ
   i = 1
   for s in subpops
     att_coef_vars = [ coef_var([variant_table[v].attributes[j] for v in s]) for j =1:num_attributes]
-    println(s," att_coef_vars: ",att_coef_vars)
+    #println(s," att_coef_vars: ",att_coef_vars)
     avg_coef_vars[i] = mean(att_coef_vars)
     i += 1
   end

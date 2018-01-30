@@ -22,7 +22,7 @@ type spatial_result_type
   num_attributes::Int64  # number of attributes of a variant
   mu::Float64     # innovation rate
   ngens::Int64  # number of generations after burn-in
-  burn_in::Float64
+  int_burn_in::Int64
   use_fit_locations::Bool  # Whether to use fitness locations other than subpopulations
   horiz_select::Bool       # Whether to use selection during horzontal transfer
   circular_variation::Bool    # Whether to vary ideal values in a circular fashion
