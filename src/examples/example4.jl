@@ -3,6 +3,7 @@ export simtype
 #global simtype=1 # means spatial structure by fitness or selection coefficient adjustment
 # simtype=2 means spatial structure by changing the ideal values for attributes
 @everywhere simtype = 2    
+const num_trials = 2
 @everywhere const N = 64        # Meta-population size
 @everywhere const N_list = [32,64]        # Meta-population size list
 #const num_subpops_list = [1,2,4,8,16,32]                     # Number of subpopulations

@@ -348,7 +348,6 @@ function print_pop( stream::IO, subpops::PopList, variant_table::Dict{Int64,vari
   println(stream)
 end
 
-using DataFrames
 # compute and save statistics about subpopulations and populations
 
 function means( subpops::PopList, variant_table::Dict{Int64,variant_type} )

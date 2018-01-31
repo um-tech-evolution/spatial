@@ -1,5 +1,5 @@
 export variant_type, fitness_location_type
-using Distributions
+#using Distributions
 const Population = Array{Int64,1}
 const PopList = Array{Population,1}
 
@@ -15,6 +15,7 @@ type fitness_location_type
 end
 
 type spatial_result_type
+  num_trials::Int64
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
   num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.

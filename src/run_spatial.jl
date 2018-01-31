@@ -5,7 +5,7 @@ Recommended command line to run:
 export spatial_result, print_spatial_result, run_trial, writeheader, writerow
 #include("types.jl")
   
-function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, 
+function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, 
     burn_in::Number, use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
       ideal_max::Float64, ideal_min::Float64, ideal_range::Float64, fit_slope::Float64, additive_error::Bool, neutral::Bool )
   if typeof(burn_in) == Int64
@@ -13,7 +13,7 @@ function spatial_result( N::Int64, num_subpops::Int64, num_fit_locations::Int64,
   else
     int_burn_in = Int(round(burn_in*N))   # Same as March 2017 
   end
-  return spatial_result_type( N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
+  return spatial_result_type( num_trials, N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
     use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
@@ -42,6 +42,7 @@ end
 function writeheader( stream::IO, num_subpops_list::Vector{Int64}, sr::spatial_result_type )
   param_strings = [
     "# $(string(Dates.today()))",
+    "# num_trials=$(sr.num_trials)",
     #"# N=$(sr.N)",
     "# num_subpops_list=$(num_subpops_list)",
     #"# num_attributes=$(sr.num_attributes)",

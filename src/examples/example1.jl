@@ -7,6 +7,7 @@ or
 =#
 export simtype
 @everywhere simtype = 2    
+const num_trials = 2
 #@everywhere const N = 8        # Meta-population size
 @everywhere const N_list = [3]        # Meta-population size list
 const num_subpops_list = [1]                     # Number of subpopulations
