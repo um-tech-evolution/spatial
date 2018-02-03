@@ -1,5 +1,4 @@
 export variant_type, fitness_location_type
-#using Distributions
 const Population = Array{Int64,1}
 const PopList = Array{Population,1}
 
