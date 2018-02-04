@@ -2,8 +2,9 @@ using SpatialEvolution
 # Suggested command-line execution:  >  julia -L SpatialEvolution.jl run.jl configs/example1
 
 function run_trials( simname::AbstractString ) 
-  stream = open("$(simname).csv","w")
-  println("stream: ",stream)
+  csv_filename = "$(simname).csv"
+  #stream = open("$(simname).csv","w")
+  #println("stream: ",stream)
   num_fit_locations = use_fit_locations_list[1] ? maximum(num_subpops_list) : num_subpops_list[1]
   sr = SpatialEvolution.spatial_result(num_trials, N_list[1],num_subpops_list[1],num_fit_locations,ne_list[1],num_attributes, mu, ngens, burn_in,
       use_fit_locations_list[1], horiz_select_list[1], circular_variation_list[1], extreme_variation_list[1], normal_stddev, 
@@ -37,14 +38,26 @@ function run_trials( simname::AbstractString )
   end
   println("===================================")
   sr_list_result = pmap(spatial_simulation, sr_list_run )
+  #=
   trial = 1
-  writeheader( stream, num_subpops_list, sr )
+  writeheader( stream, fixed_fields(), sr )
   writeheader( STDOUT, num_subpops_list, sr )
   for sr_result in sr_list_result
     writerow(stream,trial,sr_result)
     writerow(STDOUT,trial,sr_result)
     trial += 1
   end
+  close(stream)
+  =#
+  out_df = build_dataframe_from_type( SpatialEvolution.spatial_result_type, length(sr_list_result) )
+  writeheader( "$(simname).csv", fixed_fields(), sr )
+  i = 1
+  for sr_result in sr_list_result
+    add_row_to_dataframe(out_df,sr_result,i)
+    writerow("$(simname).csv", fixed_fields(), sr )
+    i += 1
+  end
+  #CSV.write( "$(simname).csv", out_df, header=true, append=true )
 end    
 
 if length(ARGS) == 0
