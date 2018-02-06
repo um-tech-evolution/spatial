@@ -18,7 +18,7 @@ type spatial_result_type
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
   num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.
-  ne::Int64       # num emigrants
+  num_emmigrants::Int64       # num emigrants
   num_attributes::Int64  # number of attributes of a variant
   mu::Float64     # innovation rate
   ngens::Int64  # number of generations after burn-in
@@ -28,6 +28,7 @@ type spatial_result_type
   circular_variation::Bool    # Whether to vary ideal values in a circular fashion
   extreme_variation::Bool    # Whether to vary ideal values by randomly choosing between high and low values
   normal_stddev::Float64  # standard deviation of normal distribution of mutation perturbations
+  patchy::Bool            # patchy==true corresponds to ideal_max=0.8, ideal_min=0.2, ideal_range=0.1
   ideal_max::Float64      # maximum ideal value for circular and extreme ideal values
   ideal_min::Float64      # minimum ideal value for circular and extreme ideal values
   ideal_range::Float64    # range of ideal values for circular and extreme ideal 

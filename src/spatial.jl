@@ -22,7 +22,6 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
 function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   #neutral = false  # TODO:  add to spatial result type and config files
   variant_table = Dict{Int64,variant_type}()
-  #println("spatial simulation: quantitative: ",quantitative)
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
   #println("fitness_locations: ",fitness_locations)
@@ -30,7 +29,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   #println("int_burn_in: ",sr.int_burn_in)
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
-  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.ne)
+  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.num_emmigrants)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
@@ -75,11 +74,11 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
       #println("g: ",g,"  pop: ",subpops[j],"  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ])
       #println("g: ",g,"  pop: ",subpops[j],"  pop fitnesses: ",[ variant_table[subpops[j][i]].fitness for i = 1:n ])
     end
-    if sr.ne > 0 && g%2==0
-      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+    if sr.num_emmigrants > 0 && g%2==0
+      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
           forward=true, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
-    elseif sr.ne > 0
-      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+    elseif sr.num_emmigrants > 0
+      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
           forward=false, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
     end
     previous_subpops = deepcopy(subpops)
