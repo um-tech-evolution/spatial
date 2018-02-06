@@ -10,7 +10,7 @@ function read_csv( filename::AbstractString )
   readtable(filename,allowcomments=true,commentmark='#')
 end
 
-function summarize_evar( evar::DataFrame; circular_variation::Bool=true, extreme_variation::Bool=true, use_fit_locations::Bool=true )
+function summarize_evar( evar::DataFrame; circular_variation::Bool=false, extreme_variation::Bool=true, use_fit_locations::Bool=true )
   # In the next line, the list gives the fields that will be split in the returned dataframe.  If there is only one value for that field, it will be included.
   #sum_evar=by(evar,[:N,:num_emigrants,:num_attributes,:num_subpops,:use_fit_locations,:circular_variation,:extreme_variation]) do df
   sum_evar=by(evar,[:N,:num_attributes,:num_subpops,:use_fit_locations,:circular_variation,:extreme_variation]) do df
