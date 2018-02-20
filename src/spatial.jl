@@ -215,11 +215,17 @@ function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64,
   return new_attributes
 end
 
+# Changed to the "linear" model of innovation from the "quadratic" model on 2/14/18.
 function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, fitness_locations::Vector{SpatialEvolution.fitness_location_type} )
   j = rand(1:length(attributes))   # Choose a random attribute
-  #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
-  attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
-  #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
+  Bdiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
+  #println("B  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Bdiff)
+  #attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
+  attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j]) 
+  Adiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
+  #println("A  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Adiff)
+  #println("Ddiff: ",Bdiff-Adiff)
+  @assert(Bdiff-Adiff>0.0)
 end 
 
 @doc """ function initialize_fitness_locations()
