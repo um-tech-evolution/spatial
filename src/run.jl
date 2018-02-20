@@ -41,6 +41,7 @@ function run_trials( simname::AbstractString )
   end
   println("===================================")
   sr_list_result = pmap(spatial_simulation, sr_list_run )
+  println("pmap done")
   #=
   trial = 1
   writeheader( stream, fixed_fields(), sr )
@@ -53,11 +54,16 @@ function run_trials( simname::AbstractString )
   close(stream)
   =#
   out_df = build_dataframe_from_type( SpatialEvolution.spatial_result_type, length(sr_list_result) )
+  fixd_fields = fixed_fields()
+  println("build df done")
   writeheader( "$(simname).csv", fixed_fields(), sr )
   i = 1
   for sr_result in sr_list_result
     add_row_to_dataframe(out_df,sr_result,i)
-    writerow("$(simname).csv", fixed_fields(), sr_result )
+    writerow("$(simname).csv", fixd_fields, sr_result )
+    if i % 1000 == 0
+      println("i: ",i,"  row")
+    end
     i += 1
   end
   #CSV.write( "$(simname).csv", out_df, header=true, append=true )
