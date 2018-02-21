@@ -62,6 +62,7 @@ function writeheader( filename::AbstractString, fixed_fields::Array{Symbol,1}, s
   #println("len re: ",length(remove_elements(fieldnames(SpatialEvolution.spatial_result_type),fixed_fields)))
   #println("re: ",remove_elements(fieldnames(SpatialEvolution.spatial_result_type),fixed_fields))
   open(filename,"w") do str
+    write(str,"# $(string(Dates.today()))")
     write(str,join(param_strings,"\n"),"\n")
     write(str,join(map(string,remove_elements(fieldnames(SpatialEvolution.spatial_result_type),fixed_fields)),","),"\n")
   end

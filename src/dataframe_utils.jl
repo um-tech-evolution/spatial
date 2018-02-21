@@ -10,15 +10,31 @@ function read_csv( filename::AbstractString )
   readtable(filename,allowcomments=true,commentmark='#')
 end
 
-function summarize_evar( evar::DataFrame; circular_variation::Bool=false, extreme_variation::Bool=true, use_fit_locations::Bool=true )
+BoolInt = Union{Bool,Int64}
+
+# Summarize the spatial results spreadsheet.
+# For all of the keyword arguments, a value of -1 means that the corresponding field will be unrestricted.
+# For Int arguments, a positive value means means that the corresponding field is restricted to be that value
+# For BoolInt arguments, a value of true or false means that the corresponding field is restricted to be that value
+function summarize_spatial( evar::DataFrame; circular_variation::BoolInt=false, extreme_variation::BoolInt=true, use_fit_locations::BoolInt=true, patchy::BoolInt=false,
+      horiz_select::BoolInt=false, num_emmigrants::Int64=0, num_attributes::Int64=1 )
   # In the next line, the list gives the fields that will be split in the returned dataframe.  If there is only one value for that field, it will be included.
-  #sum_evar=by(evar,[:N,:num_emigrants,:num_attributes,:num_subpops,:use_fit_locations,:circular_variation,:extreme_variation]) do df
-  sum_evar=by(evar,[:N,:num_attributes,:num_subpops,:use_fit_locations,:circular_variation,:extreme_variation]) do df
+  spat_df=by(evar,[:N,:horiz_select,:num_subpops,:use_fit_locations,:circular_variation,:extreme_variation,:patchy,
+        :num_emmigrants,:num_attributes,:num_fit_locations,:int_burn_in,:ideal_max,:ideal_min,:ideal_range]) do df
     # The mean function will be applied to each of the fields in this list.
-        DataFrame(mean_fit=mean(df[:fitness_mean]),attr_var=mean(df[:attribute_variance]))
+        DataFrame(mean_fit=mean(df[:fitness_mean]),fit_var=mean(df[:fitness_variance]),
+            attr_var=mean(df[:attribute_variance]),attr_coef_var=mean(df[:attribute_coef_var]))
       end
   # This restricts the rows in the returned data frame.
-  sum_evar[(sum_evar[:circular_variation].==circular_variation).&(sum_evar[:extreme_variation].==extreme_variation).&(sum_evar[:use_fit_locations].==use_fit_locations),:]
+  filtr = fill(true,size(spat_df)[1])
+  (circular_variation != -1) &&  (filtr .&= (spat_df[:circular_variation].==circular_variation))
+  (extreme_variation != -1) && (filtr .&= (spat_df[:extreme_variation].==extreme_variation))
+  (use_fit_locations != -1) && (filtr .&= (spat_df[:use_fit_locations].==use_fit_locations))
+  (horiz_select != -1) && (filtr .&= (spat_df[:horiz_select].==horiz_select))
+  (patchy != -1) && (filtr .&= (spat_df[:patchy].==patchy))
+  (num_emmigrants != -1) && (filtr .&= (spat_df[:num_emmigrants].==num_emmigrants))
+  (num_attributes != -1) && (filtr .&= (spat_df[:num_attributes].==num_attributes))
+  spat_df[filtr,:]
 end
 
 # Construct a dataframe from a composite type whose columns have the types of the fields of the composite type
