@@ -24,6 +24,8 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   variant_table = Dict{Int64,variant_type}()
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
+  #println("fitness_locations: subpop_size: ", sr.N/sr.num_subpops,"  circ: ",sr.circular_variation,"  ext: ",sr.extreme_variation)
+  #print_fit_locations(fitness_locations,sr)
   #println("fitness_locations: ",fitness_locations)
   #int_burn_in = Int(round(sr.burn_in*sr.N))  # moved to run_spatial.jl 
   #println("int_burn_in: ",sr.int_burn_in)
@@ -221,8 +223,12 @@ function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, f
   Bdiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
   #println("B  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Bdiff)
   #attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
-  #attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j])   # additive innovation
-  attributes[j] *= rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j])   # multiplicative innovation
+  attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j])   # additive innovation
+  #=
+  r = rand()
+  println("r: ",r,"  ratio: ",fitness_locations[subpop_index].ideal[j]/attributes[j])
+  attributes[j] *= rand()*(fitness_locations[subpop_index].ideal[j]/attributes[j])   # multiplicative innovation
+  =#
   Adiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
   #println("A  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Adiff)
   #println("Ddiff: ",Bdiff-Adiff)
@@ -280,6 +286,14 @@ function initialize_fitness_locations( sr::SpatialEvolution.spatial_result_type 
   return fitness_locations
 end  
 
+function print_fit_locations( fitness_locations::Vector{fitness_location_type}, sr::SpatialEvolution.spatial_result_type )
+  for j = 1:sr.num_fit_locations
+    for k = 1:sr.num_attributes
+      @printf("j:%2d  k:%2d  ideal:%.3f\n",j,k,fitness_locations[j].ideal[k])
+    end
+  end
+end
+  
 @doc """ horiz_transfer_circular!()
   Transfers variants between subpopulations in a circular fashion (either forward or backward).
   Elements to be transfered are selected by proportional selection.

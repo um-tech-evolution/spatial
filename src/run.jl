@@ -20,6 +20,7 @@ function run_trials( simname::AbstractString )
               for circular_variation in circular_variation_list
                 if !(extreme_variation && circular_variation)   # extreme variation and circular variation are not compatible
                   for horiz_select in horiz_select_list
+                    if num_emmigrants==0 && horiz_select continue end  # horiz_select doesn't make sense with no emmigrants
                     num_fit_locations = use_fit_locations ? maximum(num_subpops_list) : num_subpops
                     for num_attributes in num_attributes_list
                       for trial = 1:num_trials
