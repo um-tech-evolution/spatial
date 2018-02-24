@@ -17,7 +17,8 @@ type spatial_result_type
   num_trials::Int64
   N::Int64   # meta-population size
   num_subpops::Int64   # number of subpopulations
-  num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  0 means use num_subpops.
+  subpop_size::Int64   # size of subpops.  Calculated as N/num_subpops
+  num_fit_locations::Int64   # number of "subpopulations" to use for env variation.  
   num_emmigrants::Int64       # num emigrants
   num_attributes::Int64  # number of attributes of a variant
   mu::Float64     # innovation rate
@@ -25,7 +26,7 @@ type spatial_result_type
   int_burn_in::Int64
   use_fit_locations::Bool  # Whether to use fitness locations other than subpopulations
   horiz_select::Bool       # Whether to use selection during horzontal transfer
-  circular_variation::Bool    # Whether to vary ideal values in a circular fashion
+  linear_variation::Bool    # Whether to vary ideal values in a circular fashion
   extreme_variation::Bool    # Whether to vary ideal values by randomly choosing between high and low values
   normal_stddev::Float64  # standard deviation of normal distribution of mutation perturbations
   patchy::Bool            # patchy==true corresponds to ideal_max=0.8, ideal_min=0.2, ideal_range=0.1

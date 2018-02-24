@@ -6,7 +6,7 @@ export spatial_result, print_spatial_result, run_trial, writeheader, writerow, f
 #include("types.jl")
   
 function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, 
-    burn_in::Number, use_fit_locations::Bool, horiz_select::Bool, circular_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
+    burn_in::Number, use_fit_locations::Bool, horiz_select::Bool, linear_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
       patchy::Bool, fit_slope::Float64, additive_error::Bool, neutral::Bool )
   if typeof(burn_in) == Int64
     int_burn_in = burn_in
@@ -18,8 +18,9 @@ function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fi
   else
     ideal_max=0.5;  ideal_min=0.5;  ideal_range=0.0
   end
-  return spatial_result_type( num_trials, N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
-    use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, patchy, ideal_max, ideal_min, ideal_range, 
+  subpop_size = N/num_subpops
+  return spatial_result_type( num_trials, N, num_subpops, subpop_size, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
+    use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, patchy, ideal_max, ideal_min, ideal_range, 
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
 
@@ -36,7 +37,7 @@ function print_spatial_result( sr::spatial_result_type )
   println("burn_in: ", sr.burn_in)
   println("use_fit_locations: ", sr.use_fit_locations)
   println("horiz_select: ", sr.horiz_select)
-  println("circular_variation: ",sr.circular_variation)
+  println("linear_variation: ",sr.linear_variation)
   println("extreme_variation: ",sr.extreme_variation)
   println("fitness_mean: ", sr.fitness_mean)
   println("fitness_variance: ", sr.fitness_variance)
