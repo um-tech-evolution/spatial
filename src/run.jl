@@ -6,6 +6,7 @@ function run_trials( simname::AbstractString )
   #stream = open("$(simname).csv","w")
   #println("stream: ",stream)
   num_fit_locations = use_fit_locations_list[1] ? maximum(num_subpops_list) : num_subpops_list[1]
+  #println("N: ",N,"  num_fit_locations: ",numm_fit_locations)
   sr = SpatialEvolution.spatial_result(num_trials, N_list[1],num_subpops_list[1],num_fit_locations,num_emmigrants_list[1],num_attributes_list[1], mu, ngens, burn_in,
       use_fit_locations_list[1], horiz_select_list[1], linear_variation_list[1], extreme_variation_list[1], normal_stddev, 
       patchy_list[1], fit_slope, additive_error, neutral )
@@ -43,17 +44,6 @@ function run_trials( simname::AbstractString )
   println("===================================")
   sr_list_result = pmap(spatial_simulation, sr_list_run )
   println("pmap done")
-  #=
-  trial = 1
-  writeheader( stream, fixed_fields(), sr )
-  writeheader( STDOUT, num_subpops_list, sr )
-  for sr_result in sr_list_result
-    writerow(stream,trial,sr_result)
-    writerow(STDOUT,trial,sr_result)
-    trial += 1
-  end
-  close(stream)
-  =#
   out_df = build_dataframe_from_type( SpatialEvolution.spatial_result_type, length(sr_list_result) )
   fixd_fields = fixed_fields()
   println("build df done")

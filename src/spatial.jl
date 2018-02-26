@@ -24,7 +24,8 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   variant_table = Dict{Int64,variant_type}()
   #println("sim linear_variation: ",sr.linear_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
-  #println("fitness_locations: subpop_size: ", sr.N/sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation)
+  #println("use_fit_locations: ",sr.use_fit_locations,"  num_subpops: ", sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation,"  patchy: ",sr.patchy)
+  #println("ideal_max: ",sr.ideal_max,"  ideal_min: ",sr.ideal_min,"  ideal_range: ",sr.ideal_range)
   #print_fit_locations(fitness_locations,sr)
   #println("fitness_locations: ",fitness_locations)
   #int_burn_in = Int(round(sr.burn_in*sr.N))  # moved to run_spatial.jl 
@@ -429,6 +430,7 @@ function fit_loc_index(N,num_subpops,num_fit_locs,j,i)
   n = Int(ceil(N/num_subpops))
   mult = Int(ceil(num_fit_locs/num_subpops))
   div = Int(ceil(n*num_subpops/num_fit_locs))
+  #println("fit_loc_index num_subpops: ",num_subpops,"  num_fit_locs: ",num_fit_locs,"  j: ",j,"  i: ",i,"  result: ",mult*(j-1) + Int(floor((i-1)/div))+1)
   return mult*(j-1) + Int(floor((i-1)/div))+1
 end
 
