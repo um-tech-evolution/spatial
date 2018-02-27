@@ -29,7 +29,7 @@ type spatial_result_type
   linear_variation::Bool    # Whether to vary ideal values in a circular fashion
   extreme_variation::Bool    # Whether to vary ideal values by randomly choosing between high and low values
   normal_stddev::Float64  # standard deviation of normal distribution of mutation perturbations
-  patchy::Bool            # patchy==true corresponds to ideal_max=0.8, ideal_min=0.2, ideal_range=0.0  (changed ideal_range to 0.0 on 2/25/18)
+  #patchy::Bool            # patchy==true corresponds to ideal_max=0.8, ideal_min=0.2, ideal_range=0.0  (changed ideal_range to 0.0 on 2/25/18)
   ideal_max::Float64      # maximum ideal value for circular and extreme ideal values
   ideal_min::Float64      # minimum ideal value for circular and extreme ideal values
   ideal_range::Float64    # range of ideal values for circular and extreme ideal 

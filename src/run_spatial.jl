@@ -7,7 +7,7 @@ export spatial_result, print_spatial_result, run_trial, writeheader, writerow, f
   
 function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fit_locations::Int64, ne::Int64, num_attributes::Int64, mu::Float64, ngens::Int64, 
     burn_in::Number, use_fit_locations::Bool, horiz_select::Bool, linear_variation::Bool, extreme_variation::Bool, normal_stddev::Float64,
-      patchy::Bool, fit_slope::Float64, additive_error::Bool, neutral::Bool )
+      fit_slope::Float64, additive_error::Bool, neutral::Bool )
   if typeof(burn_in) == Int64
     int_burn_in = burn_in
   else
@@ -24,7 +24,7 @@ function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fi
   end
   subpop_size = N/num_subpops
   return spatial_result_type( num_trials, N, num_subpops, subpop_size, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
-    use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, patchy, ideal_max, ideal_min, ideal_range, 
+    use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
 

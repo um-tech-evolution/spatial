@@ -24,7 +24,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   variant_table = Dict{Int64,variant_type}()
   #println("sim linear_variation: ",sr.linear_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
-  #println("use_fit_locations: ",sr.use_fit_locations,"  num_subpops: ", sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation,"  patchy: ",sr.patchy)
+  #println("use_fit_locations: ",sr.use_fit_locations,"  num_subpops: ", sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation)
   #println("ideal_max: ",sr.ideal_max,"  ideal_min: ",sr.ideal_min,"  ideal_range: ",sr.ideal_range)
   #print_fit_locations(fitness_locations,sr)
   #println("fitness_locations: ",fitness_locations)
@@ -137,6 +137,7 @@ function fitness( attributes::Vector{Float64}, ideal::Vector{Float64}, neutral::
     result = max(1.0-dis/length(attributes),0.0)
   else  # inverse method of computing fitness added on 11/14/17
     result = 1.0/(fit_slope*dis+1.0)
+    #println("fitness: attribute: ",attributes[1],"  ideal: ",ideal[1],"  result: ",result)
   end
   return result
 end
