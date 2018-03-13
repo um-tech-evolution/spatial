@@ -25,7 +25,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   #println("sim linear_variation: ",sr.linear_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
   #println("use_fit_locations: ",sr.use_fit_locations,"  num_subpops: ", sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation)
-  #println("ideal_max: ",sr.ideal_max,"  ideal_min: ",sr.ideal_min,"  ideal_range: ",sr.ideal_range)
+  #println("ideal_max: ",sr.ideal_max,"  ideal_min: ")
   #print_fit_locations(fitness_locations,sr)
   #println("fitness_locations: ",fitness_locations)
   #int_burn_in = Int(round(sr.burn_in*sr.N))  # moved to run_spatial.jl 
@@ -268,16 +268,16 @@ function initialize_fitness_locations( sr::SpatialEvolution.spatial_result_type 
     mid = Int(floor(sr.num_fit_locations/2))
     for j = 1:sr.num_fit_locations
       for k = 1:sr.num_attributes
-        fitness_locations[j].ideal[k] = sr.ideal_min+increment*(j-1)+(rand()*sr.ideal_range-0.5*sr.ideal_range)
+        fitness_locations[j].ideal[k] = sr.ideal_min+increment*(j-1)
       end
     end
   elseif !sr.linear_variation && sr.extreme_variation  # randomly choose between low_value and high_value
     for j = 1:sr.num_fit_locations
       for k = 1:sr.num_attributes
         if rand() < 0.5
-          fitness_locations[j].ideal[k] = sr.ideal_min+(rand()*sr.ideal_range-0.5*sr.ideal_range)
+          fitness_locations[j].ideal[k] = sr.ideal_min
         else 
-          fitness_locations[j].ideal[k] = sr.ideal_max+(rand()*sr.ideal_range-0.5*sr.ideal_range)
+          fitness_locations[j].ideal[k] = sr.ideal_max
         end
       end
       #println("j: ",j,"  ideal: ",fitness_locations[j].ideal)

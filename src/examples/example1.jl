@@ -12,6 +12,7 @@ const num_trials = 1
 @everywhere const N_list = [8]        # Meta-population size list
 const num_subpops_list = [2,4]                     # Number of subpopulations
 const mu = 0.20                 # per-individual innovation rate 
+const mu_list = [0.0, 0.05]
 #const num_emmigrants = 1                    # number emmigrants
 const num_emmigrants_list=[1]
 #const num_attributes = 2        # number attributes for quantitative representation

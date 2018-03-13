@@ -32,7 +32,6 @@ type spatial_result_type
   #patchy::Bool            # patchy==true corresponds to ideal_max=0.8, ideal_min=0.2, ideal_range=0.0  (changed ideal_range to 0.0 on 2/25/18)
   ideal_max::Float64      # maximum ideal value for circular and extreme ideal values
   ideal_min::Float64      # minimum ideal value for circular and extreme ideal values
-  ideal_range::Float64    # range of ideal values for circular and extreme ideal 
   fit_slope::Float64      # If fit_slope> 0.0, use inverse fitness with this fit_slope.  Otherwise, linear fitness
   additive_error::Bool    # If true, use additive error with wrapping.  If false, use multiplicative copy error without wrapping
   neutral::Bool           # if true, no selection, do not run proportional selection

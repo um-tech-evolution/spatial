@@ -10,12 +10,13 @@ export simtype
 # simtype=2 means spatial structure by changing the ideal values for attributes
 @everywhere simtype = 2    
 #const vtbl = Dict{Int64,variant_type}()
-const num_trials = 2
+const num_trials = 4
 #@everywhere const N = 8        # Meta-population size
 @everywhere const N_list = [8]        # Meta-population size list
 const num_subpops_list = [1,2]
 const normal_stddev = 0.1
 const mu = 0.05                 # per-individual innovation rate 
+const mu_list = [0.05]
 #const num_emmigrants = 0                    # number emmigrants
 const num_emmigrants_list = [0,2]                    # number emmigrants
 #const num_attributes = 2        # number attributes for quantitative representation

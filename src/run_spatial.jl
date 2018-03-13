@@ -14,17 +14,17 @@ function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fi
     int_burn_in = Int(round(burn_in*N))   # Same as March 2017 
   end
   if use_fit_locations
-    ideal_max=0.8;  ideal_min=0.2;  ideal_range=0.0  # changed from 0.1 to 0.0 on Feb. 25, 2018
+    ideal_max=0.8;  ideal_min=0.2;  # removed ideal_range on 2/27/18
   else
     if linear_variation==false && extreme_variation == false  # interpret as uniform variation
-      ideal_max=0.5;  ideal_min=0.5;  ideal_range=0.0
+      ideal_max=0.5;  ideal_min=0.5;  
     else
-      ideal_max=0.8;  ideal_min=0.2;  ideal_range=0.0
+      ideal_max=0.8;  ideal_min=0.2;  
     end
   end
   subpop_size = N/num_subpops
   return spatial_result_type( num_trials, N, num_subpops, subpop_size, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
-    use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range, 
+    use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, 
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
 
@@ -51,9 +51,10 @@ end
 
 function fixed_fields()  
 [ :num_trials,
- :mu,
  :ngens,
  :normal_stddev,
+ :ideal_max,
+ :ideal_min,
  :fit_slope,
  :additive_error,
  :neutral
