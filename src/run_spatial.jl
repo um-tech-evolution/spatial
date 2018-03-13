@@ -13,6 +13,16 @@ function spatial_result( num_trials::Int64, N::Int64, num_subpops::Int64, num_fi
   else
     int_burn_in = Int(round(burn_in*N))   # Same as March 2017 
   end
+  if patchy
+    ideal_max=0.8;  ideal_min=0.2;  ideal_range=0.0  # changed from 0.1 to 0.0 on Feb. 25, 2018
+  else
+    if circular_variation==false && extreme_variation == false
+      ideal_max=0.5;  ideal_min=0.5;  ideal_range=0.0
+    else
+      ideal_max=0.8;  ideal_min=0.2;  ideal_range=0.0
+    end
+  end
+
   return spatial_result_type( num_trials, N, num_subpops, num_fit_locations, ne, num_attributes, mu, ngens, int_burn_in,
     use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, patchy, ideal_max, ideal_min, ideal_range, 
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )

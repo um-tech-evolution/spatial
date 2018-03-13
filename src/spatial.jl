@@ -20,7 +20,6 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
 function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
-  #neutral = false  # TODO:  add to spatial result type and config files
   variant_table = Dict{Int64,variant_type}()
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
@@ -221,7 +220,12 @@ function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, f
   Bdiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
   #println("B  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Bdiff)
   #attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
-  attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j]) 
+  attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j])   # additive innovation
+  #=
+  r = rand()
+  println("r: ",r,"  ratio: ",fitness_locations[subpop_index].ideal[j]/attributes[j])
+  attributes[j] *= rand()*(fitness_locations[subpop_index].ideal[j]/attributes[j])   # multiplicative innovation
+  =#
   Adiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
   #println("A  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Adiff)
   #println("Ddiff: ",Bdiff-Adiff)
@@ -284,6 +288,7 @@ end
   Elements to be transfered are selected by proportional selection.
   Elements to be replaced can be random or selected by reverse proportional selection depending on the flag neg_select.
   subpops is modified by this function (as a side effect)
+  Note:  m  is the number of subpops
 """
 function horiz_transfer_circular!( N::Int64, m::Int64, num_emmigrants::Int64, subpops::PopList, id::Vector{Int64}, 
     variant_table::Dict{Int64,variant_type}, fitness_locations::Vector{SpatialEvolution.fitness_location_type}, fit_slope::Float64;
@@ -403,6 +408,7 @@ function fit_loc_index(N,num_subpops,num_fit_locs,j,i)
   n = Int(ceil(N/num_subpops))
   mult = Int(ceil(num_fit_locs/num_subpops))
   div = Int(ceil(n*num_subpops/num_fit_locs))
+  #println("fit_loc_index num_subpops: ",num_subpops,"  num_fit_locs: ",num_fit_locs,"  j: ",j,"  i: ",i,"  result: ",mult*(j-1) + Int(floor((i-1)/div))+1)
   return mult*(j-1) + Int(floor((i-1)/div))+1
 end
 
