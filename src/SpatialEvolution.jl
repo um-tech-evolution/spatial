@@ -6,4 +6,4 @@ include("run_spatial.jl")
 include("dataframe_utils.jl")
 end
 
-using SpatialEvolution
+using Main.SpatialEvolution

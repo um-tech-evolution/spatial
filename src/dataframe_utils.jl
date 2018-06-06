@@ -1,11 +1,14 @@
 # Analyze a spatial simulation output file
-using CSV, DataFrames
+using DataFrames
+import CSV.read
 export read_csv, summarize_spatial, build_dataframe_from_type, add_row_to_dataframe, average_over_trials, params_from_fixed_fields,
     fixed_nonfixed_fields, sumarize_spatial, average_over_trials, average_file_over_trials
 
-# Sample call: 
-# summarize_evar(read_csv("../data/2_1_18/evar_N64_na1_ne0_hzboth_std0.05.A.csv"),extreme_variation=false,linear_variation=true,use_fit_locations=true)
+# Sample calls: 
+# julia> average_file_over_trials( "../data/3_15_18/varyN_2_4_8.csv", [:fitness_mean])
+# julia> summarize_evar(read_csv("../data/2_1_18/evar_N64_na1_ne0_hzboth_std0.05.A.csv"),extreme_variation=false,linear_variation=true,use_fit_locations=true)
 
+# readtable function deprecated in julia v6
 function read_csv( filename::AbstractString )
   println("filename: ",filename)
   readtable(filename,allowcomments=true,commentmark='#')
@@ -83,30 +86,10 @@ function summarize_spatial( evar::DataFrame; linear_variation::BoolInt=false, ex
   spat_df[filtr,:]
 end
 
-function average_over_trials( df::DataFrame, mean_fields::Vector{Symbol} )
-  # In the next line, the list gives the fields that will be split in the returned dataframe.  If there is only one value for that field, it will be included.
-  #mean_fields = [:fitness_mean,:fitness_variance,:attribute_variance,:attribute_coef_var]
-  fixed, nonfixed = fixed_nonfixed_fields( df )
-  println("fixed: ",fixed)
-  println("nonfixed: ",nonfixed)
-  #fixed_elements = [:num_trials, :ideal_max, :ideal_min, :neutral, :mu, :ngens, :normal_stddev, :fit_slope, :additive_error,
-  #    :fitness_mean, :fitness_variance, :attribute_variance, :attribute_coef_var ]
-  #filter!(x->!(x in fixed_elements), fields )  # remove fixed and averaged fields
-  nfixed = filter(x->!(x in mean_fields),nonfixed)  # remove mean fields from nonfixed
-  println("nfixed: ",nfixed)
-  ddf = delete!(copy(df),fixed)   # remove fixed fields from df
-  #=
-  spat_df=by(df,nonfixed) do df
-    DataFrame(mean_fit=mean(df[:fitness_mean]),fit_var=mean(df[:fitness_variance]), attr_var=mean(df[:attribute_variance]),attr_coef_var=mean(df[:attribute_coef_var]))
-  end
-  spat_df
-  =#
-  aggregate( ddf, nfixed, mean )
-end
-
 function average_file_over_trials( filename::AbstractString, mean_fields::Vector{Symbol} )
   param_lines = read_params( filename )
-  indf = read_csv( filename )
+  #indf = read_csv( filename )
+  indf = read_dataframe( filename )
   pstrings, non_fixed = params_from_fixed_fields( indf )
   outdf = average_over_trials( indf, mean_fields )
   out_filename = filename[1:end-4] * "_means" * filename[end-3:end]
@@ -115,6 +98,28 @@ function average_file_over_trials( filename::AbstractString, mean_fields::Vector
     write(f, join(map(string,names(outdf)),","),"\n")
   end
   CSV.write(out_filename,outdf,append=true)
+  println("output file: ", out_filename, "  written")
+end
+
+function average_over_trials( df::DataFrame, mean_fields::Vector{Symbol} )
+  # In the next line, the list gives the fields that will be split in the returned dataframe.  If there is only one value for that field, it will be included.
+  #mean_fields = [:fitness_mean,:fitness_variance,:attribute_variance,:attribute_coef_var]
+  fixed, nonfixed = fixed_nonfixed_fields( df )
+  #println("fixed: ",fixed)
+  #println("nonfixed: ",nonfixed)
+  #fixed_elements = [:num_trials, :ideal_max, :ideal_min, :neutral, :mu, :ngens, :normal_stddev, :fit_slope, :additive_error,
+  #    :fitness_mean, :fitness_variance, :attribute_variance, :attribute_coef_var ]
+  #filter!(x->!(x in fixed_elements), fields )  # remove fixed and averaged fields
+  nfixed = filter(x->!(x in mean_fields),nonfixed)  # remove mean fields from nonfixed
+  #println("nfixed: ",nfixed)
+  ddf = delete!(copy(df),fixed)   # remove fixed fields from df
+  #=
+  spat_df=by(df,nonfixed) do df
+    DataFrame(mean_fit=mean(df[:fitness_mean]),fit_var=mean(df[:fitness_variance]), attr_var=mean(df[:attribute_variance]),attr_coef_var=mean(df[:attribute_coef_var]))
+  end
+  spat_df
+  =#
+  aggregate( ddf, nfixed, mean )
 end
 
 # Construct a dataframe from a composite type whose columns have the types of the fields of the composite type
@@ -137,7 +142,35 @@ function add_row_to_dataframe( df::DataFrame, record::Any, index::Int64 )
     df[n][index] = getfield(record,n)
   end
 end
-  
+
+@doc """ function remove_elements( field_list::Array{Symbol,1}, remove_list::Array{Symbol,1} )
+  Remove the symbols in remove_list from the symbols in field_list
+"""
 function remove_elements( field_list::Array{Symbol,1}, remove_list::Array{Symbol,1} )
   filter(e->!(e in remove_list),field_list)
 end
+
+@doc """ read_dataframe( filename::String )
+  Read a DataFrame from filename where there may be comment lines starting with hash characters preceding the 
+     header row and the data
+"""
+function read_dataframe( filename::String )
+  line_number = 0
+  open(filename) do f
+    while true  # skip over comment lines that begin with a hash symbol
+      line_number += 1
+      line = strip(readline(f))
+      if length(line) == 0 || line[1] != '#'
+        break
+      end
+    end
+  end
+  # line_number is now the line number of the first non-comment line
+  open(filename) do f
+    for i = 1:(line_number-1)    # skip over comment lines
+      readline(f)
+    end
+    return( CSV.read( f ) )
+  end
+end
+

@@ -11,7 +11,7 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     m     number of subpopulations   # for now, subpopulation size = N/m
     mu    innovation probability
     ngens number of generations
-    num_emmigrants   number of emmigrants in horizontal transfer
+    num_emigrants   number of emigrants in horizontal transfer
     num_attributes   number of quantitative attributes of a variant
     variant_table Keeps track fitnesses and variant parent and innovation ancestor
     quantitative==true means individuals have quantitative attributes, fitness computed by distance from ideal
@@ -19,25 +19,19 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     extreme==true  means that horizontal transfer is done in a forward linear fashion
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
-function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
-  #neutral = false  # TODO:  add to spatial result type and config files
+function spatial_simulation( sr::SpatialEvolution.spatial_run_result_type )
+  println("N: ",sr.N)
   variant_table = Dict{Int64,variant_type}()
-  #println("sim linear_variation: ",sr.linear_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
-  #println("use_fit_locations: ",sr.use_fit_locations,"  num_subpops: ", sr.num_subpops,"  num_fit_locs: ",sr.num_fit_locations,"  lin: ",sr.linear_variation,"  ext: ",sr.extreme_variation)
-  #println("ideal_max: ",sr.ideal_max,"  ideal_min: ")
-  #print_fit_locations(fitness_locations,sr)
-  #println("fitness_locations: ",fitness_locations)
-  #int_burn_in = Int(round(sr.burn_in*sr.N))  # moved to run_spatial.jl 
-  #println("int_burn_in: ",sr.int_burn_in)
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
-  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.num_emmigrants)
+  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.num_emigrants)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
   cumm_attr_coef_vars = zeros(Float64,sr.num_subpops)
   #pop_list = Vector{PopList}()
+  # Initialize subpops
   subpops = PopList()
   for j = 1:sr.num_subpops
     Base.push!( subpops, Population() )
@@ -53,6 +47,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   current_variant_id = id[1]
   #Base.push!(pop_list,deepcopy(subpops))
   previous_subpops = deepcopy(subpops)
+  # The generational loop follows
   count_gens = 0
   for g = 1:sr.ngens+sr.int_burn_in
     #println("before g: ",g,"  pop: ",subpops[1],"  pop attr: ",[ variant_table[subpops[1][i]].attributes[1] for i = 1:n ])
@@ -63,8 +58,8 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
     for j = 1:sr.num_subpops
       for i = 1:n
         fit_loc_ind = fit_loc_index(sr.N,sr.num_subpops,sr.num_fit_locations,j,i)
-        cp = copy_parent( previous_subpops[j][i], id, fit_loc_ind, sr.mu, sr.normal_stddev, sr.additive_error, sr.neutral, sr.fit_slope,
-            variant_table, fitness_locations )
+        cp = copy_parent( previous_subpops[j][i], id, fit_loc_ind, sr.mu, sr.normal_stddev, 
+            sr.additive_error, sr.neutral, sr.fit_slope, variant_table, fitness_locations )
         subpops[j][i] = cp
       end
       #println("g:",g," j:",j,"  ",[(v,variant_table[v].attributes) for v in subpops[j]])
@@ -77,12 +72,12 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
       #println("B g: ",g,"  pop: ",subpops[j],"  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ])
       #println("g: ",g,"  pop: ",subpops[j],"  pop fitnesses: ",[ variant_table[subpops[j][i]].fitness for i = 1:n ])
     end
-    if sr.num_emmigrants > 0 && g%2==0
-      horiz_transfer_linear!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
-          forward=true, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
-    elseif sr.num_emmigrants > 0
-      horiz_transfer_linear!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
-          forward=false, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
+    if sr.num_emigrants > 0 && g%2==0
+      horiz_transfer_linear!( sr.N, sr.num_subpops, sr.num_emigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+          forward=true, neg_select=sr.horiz_select, emigrant_select=sr.horiz_select, neutral=sr.neutral )
+    elseif sr.num_emigrants > 0
+      horiz_transfer_linear!( sr.N, sr.num_subpops, sr.num_emigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+          forward=false, neg_select=sr.horiz_select, emigrant_select=sr.horiz_select, neutral=sr.neutral )
     end
     #=
     for j = 1:sr.num_subpops
@@ -250,7 +245,7 @@ end
       sr.ideal_max, then moves back to sr.ideal_min.
   3)  Extreme:  ideal is chosen to be within 0.5*sr.ideal_range of sr.ideal_min or sr.ideal_max
 """
-function initialize_fitness_locations( sr::SpatialEvolution.spatial_result_type )
+function initialize_fitness_locations( sr::SpatialEvolution.spatial_run_result_type )
   fitness_locations = [ fitness_location_type( zeros(Float64,sr.num_attributes) ) for j = 1:sr.num_fit_locations ]
   if !sr.linear_variation && !sr.extreme_variation  # random variation---no relationship to subpop number
     #println("init sr.linear_variation: ",sr.linear_variation,"  sr.extreme_variation: ",sr.extreme_variation)
@@ -303,25 +298,25 @@ end
   Elements to be replaced can be random or selected by reverse proportional selection depending on the flag neg_select.
   subpops is modified by this function (as a side effect)
 """
-function horiz_transfer_linear!( N::Int64, m::Int64, num_emmigrants::Int64, subpops::PopList, id::Vector{Int64}, 
+function horiz_transfer_linear!( N::Int64, m::Int64, num_emigrants::Int64, subpops::PopList, id::Vector{Int64}, 
     variant_table::Dict{Int64,variant_type}, fitness_locations::Vector{SpatialEvolution.fitness_location_type}, fit_slope::Float64;
-     forward::Bool=true, neg_select::Bool=true, emmigrant_select::Bool=true, neutral::Bool=false )
+     forward::Bool=true, neg_select::Bool=true, emigrant_select::Bool=true, neutral::Bool=false )
   n = Int(floor(N/m))    # size of subpopulations
   num_attributes = length(variant_table[subpops[1][1]].attributes)
   num_fit_locations = length(fitness_locations)
   #println("ht num_fit_locations: ",num_fit_locations)
   #println("horiz_transfer_linear! forward: ",forward,"  m: ",m,"  num_attributes: ",num_attributes)
-  emmigrants = PopList()
+  emigrants = PopList()
   for j = 1:m
-    if emmigrant_select
-      Base.push!( emmigrants, propsel( subpops[j], num_emmigrants, variant_table ) )
+    if emigrant_select
+      Base.push!( emigrants, propsel( subpops[j], num_emigrants, variant_table ) )
     else
       # TODO:  do random choice instead of first elements
       # Added shuffle on 1/23/18.  Not efficient, but should be correct.
-      Base.push!( emmigrants, Base.shuffle(subpops[j])[1:num_emmigrants] )   # Neutral
+      Base.push!( emigrants, Base.shuffle(subpops[j])[1:num_emigrants] )   # Neutral
     end
   end
-  new_emmigrants = Population[ Population() for j = 1:m ]
+  new_emigrants = Population[ Population() for j = 1:m ]
   for j = 1:m
     #println("j: ",j,"  j%m+1: ",j%m+1,"  (j+m-2)%m+1: ",(j+m-2)%m+1)
     # subpop k is the source, subpop j is the destination.  k == 0 means no transfer
@@ -331,21 +326,21 @@ function horiz_transfer_linear!( N::Int64, m::Int64, num_emmigrants::Int64, subp
       k = j < m ? j+1 : 0
     end
     #println("j: ",j,"  k: ",k)
-    # Create new variants for the emmigrants in the new subpop
+    # Create new variants for the emigrants in the new subpop
     if k > 0
-      for e in emmigrants[k]   # subpop k is the source, subpop j is the destination
+      for e in emigrants[k]   # subpop k is the source, subpop j is the destination
         i = id[1]
         #println("e: ",e,"  i: ",i)
-        #println("new emmigrant i: ",i,"  subpop_index:",k,"  num_attributes: ",num_attributes )
+        #println("new emigrant i: ",i,"  subpop_index:",k,"  num_attributes: ",num_attributes )
         variant_table[i] = deepcopy(variant_table[e])
         ii = rand(1:n)  # Choose a random index within the subpopulation
         fit_loc_ind = fit_loc_index(N,m,num_fit_locations,j,ii)
         variant_table[i].fitness_location = fit_loc_ind   # set the new fitness location
         variant_table[i].fitness = fitness( variant_table[i].attributes, fitness_locations[fit_loc_ind].ideal, neutral, fit_slope )  
-        #variant_table[i] = variant_type( i, 0.0, j, emmigrants[j].attributes  )
+        #variant_table[i] = variant_type( i, 0.0, j, emigrants[j].attributes  )
         #println("variant_table[",e,"]: ",variant_table[e])
         #println("variant_table[",i,"]: ",variant_table[i])
-        Base.push!( new_emmigrants[j], i )
+        Base.push!( new_emigrants[j], i )
         id[1] += 1
       end
     end
@@ -360,14 +355,15 @@ function horiz_transfer_linear!( N::Int64, m::Int64, num_emmigrants::Int64, subp
       pop_after_deletion = Population[]
       #println("j: ",j,"  j%m+1: ",j%m+1,"  (j+m-2)%m+1: ",(j+m-2)%m+1)
       if neg_select  # use reverse proportional selection to delete elements by negative fitness
-        pop_after_deletion = reverse_propsel(subpops[j],num_emmigrants,variant_table)
+        pop_after_deletion = reverse_propsel(subpops[j],num_emigrants,variant_table)
       else  # delete random elements to delete
-        pop_after_deletion = subpops[j][1:(n-num_emmigrants)]
+        # TODO:  Add shuffle so that elements to be deleted are random instead of arbitrary.
+        pop_after_deletion = subpops[j][1:(n-num_emigrants)]
       end
-      subpops[j] = append!( pop_after_deletion, new_emmigrants[j] )
+      subpops[j] = append!( pop_after_deletion, new_emigrants[j] )
     end
   end
-  emmigrants  # perhaps should be the modified subpops
+  emigrants  # perhaps should be the modified subpops
 end
 
 function print_subpop( subpop::Vector{Int64}, variant_table::Dict{Int64,variant_type} )

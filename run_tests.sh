@@ -3,9 +3,9 @@
 # 
 cd src
 
-julia -L SpatialEvolution.jl run.jl examples/example1
-julia -L SpatialEvolution.jl run.jl examples/example2
-julia -L SpatialEvolution.jl run.jl examples/example3
-julia -L SpatialEvolution.jl run.jl examples/example4
+julia run.jl examples/example1 1
+julia run.jl examples/example2 1
+julia run.jl examples/example3 1
+julia run.jl examples/example4 1
 
 cd ..
