@@ -1,9 +1,9 @@
 # Configuration for running spatial simulation
 #=
 Recommended command line to run:
->  julia -L SpatialEvolution.jl run.jl examples/example1
+>  julia run.jl examples/example1
 or
->  julia -p 4 -L SpatialEvolution.jl run.jl examples/example1
+>  julia -p 4 run.jl examples/example1
 =#
 const simtype = 2    
 const num_trials = 1
