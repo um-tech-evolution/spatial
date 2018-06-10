@@ -9,9 +9,10 @@ const num_trials = 2
 #const num_subpops_list = [1,2,4,8,16,32]                     # Number of subpopulations
 const num_subpops_list = [4]                     # Number of subpopulations
 const mu = 0.00                 # per-individual innovation rate 
-#const ne = 0                    # number emmigrants
-const ne_list = [0]                    # number emmigrants
+#const num_emigrants = 0                    # number emigrants
+const num_emigrants_list = [0]                    # number emigrants
 const num_attributes = 1        # number attributes for quantitative representation
+const num_attributes_list = [1]        # number attributes for quantitative representation
 const ngens = 10       # Generations after burn-in
 #const horiz_select=true
 const horiz_select_list=[true]
@@ -28,5 +29,6 @@ const ideal_range = 0.1
 const fit_slope = 0.0
 const additive_error = true
 const neutral = false
+const patchy = true
 
 
