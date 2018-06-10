@@ -5,27 +5,29 @@ function run_trials( simname::AbstractString )
   stream = open("$(simname).csv","w")
   println("stream: ",stream)
   num_fit_locations = use_fit_locations_list[1] ? maximum(num_subpops_list) : num_subpops_list[1]
-  sr = SpatialEvolution.spatial_result(num_trials, N_list[1],num_subpops_list[1],num_fit_locations,ne_list[1],num_attributes, mu, ngens, burn_in,
+  sr = SpatialEvolution.spatial_result(num_trials, N_list[1],num_subpops_list[1],num_fit_locations,num_emmigrants_list[1],num_attributes_list[1], mu, ngens, burn_in,
       use_fit_locations_list[1], horiz_select_list[1], circular_variation_list[1], extreme_variation_list[1], normal_stddev, 
-      ideal_max, ideal_min, ideal_range, fit_slope, additive_error, neutral )
+      patchy, ideal_max, ideal_min, ideal_range, fit_slope, additive_error, neutral )
   sr_list_run = SpatialEvolution.spatial_result_type[]
   trial=1
   for N in N_list
     for num_subpops in num_subpops_list
-      for ne in ne_list
+      for num_emmigrants in num_emmigrants_list
         for use_fit_locations in use_fit_locations_list
           for extreme_variation in extreme_variation_list
             for circular_variation in circular_variation_list
               if !(extreme_variation && circular_variation)   # extreme variation and circular variation are not compatible
                 for horiz_select in horiz_select_list
                   num_fit_locations = use_fit_locations ? maximum(num_subpops_list) : num_subpops
-                  println("num_subpops: ",num_subpops,"  num_fit_locations: ",num_fit_locations)
-                  for trial = 1:num_trials
-                    sr = SpatialEvolution.spatial_result(num_trials, N,num_subpops,num_fit_locations,ne,num_attributes, mu, ngens, burn_in,
-                      use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, ideal_max, ideal_min, ideal_range,
-                    fit_slope, additive_error, neutral )
-                    Base.push!(sr_list_run, sr )
-                    #println("= = = = = = = =")
+                  for num_attributes in num_attributes_list
+                    for trial = 1:num_trials
+                      sr = SpatialEvolution.spatial_result(num_trials, N,num_subpops,num_fit_locations,num_emmigrants,num_attributes, mu, ngens, burn_in,
+                        use_fit_locations, horiz_select, circular_variation, extreme_variation, normal_stddev, 
+                        patchy, ideal_max, ideal_min, ideal_range, fit_slope, additive_error, neutral )
+                      println("num_subpops: ",sr.num_subpops,"  num_fit_locations: ",sr.num_fit_locations,"  num_attributes: ",sr.num_attributes  )
+                      Base.push!(sr_list_run, sr )
+                      #println("= = = = = = = =")
+                    end
                   end
                 end
               end

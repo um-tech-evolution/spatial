@@ -20,9 +20,7 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
 function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
-  #neutral = false  # TODO:  add to spatial result type and config files
   variant_table = Dict{Int64,variant_type}()
-  #println("spatial simulation: quantitative: ",quantitative)
   #println("sim circular_variation: ",sr.circular_variation,"  extreme_variation: ",sr.extreme_variation)
   fitness_locations = initialize_fitness_locations(sr)
   #println("fitness_locations: ",fitness_locations)
@@ -30,7 +28,7 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
   #println("int_burn_in: ",sr.int_burn_in)
   id = Int[1]
   n = Int(floor(sr.N/sr.num_subpops))    # size of subpopulations
-  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.ne)
+  #println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  n: ",n,"  use fit locations: ",sr.use_fit_locations,"  num_attributes: ",sr.num_attributes,"  ngens: ",sr.ngens,"  ne: ",sr.num_emmigrants)
   cumm_means = zeros(Float64,sr.num_subpops)
   cumm_variances = zeros(Float64,sr.num_subpops)
   cumm_attr_vars = zeros(Float64,sr.num_subpops)
@@ -75,11 +73,11 @@ function spatial_simulation( sr::SpatialEvolution.spatial_result_type )
       #println("g: ",g,"  pop: ",subpops[j],"  pop attr: ",[ variant_table[subpops[j][i]].attributes[1] for i = 1:n ])
       #println("g: ",g,"  pop: ",subpops[j],"  pop fitnesses: ",[ variant_table[subpops[j][i]].fitness for i = 1:n ])
     end
-    if sr.ne > 0 && g%2==0
-      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+    if sr.num_emmigrants > 0 && g%2==0
+      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
           forward=true, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
-    elseif sr.ne > 0
-      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.ne, subpops, id, variant_table, fitness_locations, sr.fit_slope,
+    elseif sr.num_emmigrants > 0
+      horiz_transfer_circular!( sr.N, sr.num_subpops, sr.num_emmigrants, subpops, id, variant_table, fitness_locations, sr.fit_slope,
           forward=false, neg_select=sr.horiz_select, emmigrant_select=sr.horiz_select, neutral=sr.neutral )
     end
     previous_subpops = deepcopy(subpops)
@@ -216,11 +214,22 @@ function mutate_attributes( attributes::Vector{Float64}, normal_stddev::Float64,
   return new_attributes
 end
 
+# Changed to the "linear" model of innovation from the "quadratic" model on 2/14/18.
 function innovate_attribute( attributes::Vector{Float64}, subpop_index::Int64, fitness_locations::Vector{SpatialEvolution.fitness_location_type} )
   j = rand(1:length(attributes))   # Choose a random attribute
-  #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
-  attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
-  #println("j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j])
+  Bdiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
+  #println("B  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Bdiff)
+  #attributes[j] += rand()*abs(attributes[j] - fitness_locations[subpop_index].ideal[j])*(fitness_locations[subpop_index].ideal[j]-attributes[j])
+  attributes[j] += rand()*(fitness_locations[subpop_index].ideal[j] - attributes[j])   # additive innovation
+  #=
+  r = rand()
+  println("r: ",r,"  ratio: ",fitness_locations[subpop_index].ideal[j]/attributes[j])
+  attributes[j] *= rand()*(fitness_locations[subpop_index].ideal[j]/attributes[j])   # multiplicative innovation
+  =#
+  Adiff = abs(attributes[j]-fitness_locations[subpop_index].ideal[j])
+  #println("A  j: ",j,"  attribute: ",attributes[j],"  ideal: ",fitness_locations[subpop_index].ideal[j]," diff: ",Adiff)
+  #println("Ddiff: ",Bdiff-Adiff)
+  @assert(Bdiff-Adiff>0.0)
 end 
 
 @doc """ function initialize_fitness_locations()
@@ -279,6 +288,7 @@ end
   Elements to be transfered are selected by proportional selection.
   Elements to be replaced can be random or selected by reverse proportional selection depending on the flag neg_select.
   subpops is modified by this function (as a side effect)
+  Note:  m  is the number of subpops
 """
 function horiz_transfer_circular!( N::Int64, m::Int64, num_emmigrants::Int64, subpops::PopList, id::Vector{Int64}, 
     variant_table::Dict{Int64,variant_type}, fitness_locations::Vector{SpatialEvolution.fitness_location_type}, fit_slope::Float64;
@@ -398,6 +408,7 @@ function fit_loc_index(N,num_subpops,num_fit_locs,j,i)
   n = Int(ceil(N/num_subpops))
   mult = Int(ceil(num_fit_locs/num_subpops))
   div = Int(ceil(n*num_subpops/num_fit_locs))
+  #println("fit_loc_index num_subpops: ",num_subpops,"  num_fit_locs: ",num_fit_locs,"  j: ",j,"  i: ",i,"  result: ",mult*(j-1) + Int(floor((i-1)/div))+1)
   return mult*(j-1) + Int(floor((i-1)/div))+1
 end
 
