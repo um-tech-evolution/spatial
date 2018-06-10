@@ -13,6 +13,7 @@ function run_trials( simname::AbstractString, sr::SpatialEvolution.spatial_resul
   #println("N: ",N,"  num_fit_locations: ",numm_fit_locations)
   sr_list_run = SpatialEvolution.spatial_run_result_type[]
   trial=1
+  println("Building configurations: ")
   for N in sr.N_list
     for num_subpops in sr.num_subpops_list
       for num_emigrants in sr.num_emigrants_list
@@ -42,13 +43,13 @@ function run_trials( simname::AbstractString, sr::SpatialEvolution.spatial_resul
       end
     end
   end
-  println("===================================")
+  println("Configurations for trials built")
+  println("Running simulation trials:")
   sr_list_result = pmap(spatial_simulation, sr_list_run )
-  #sr_list_result = map(spatial_simulation, sr_list_run )
-  #println("pmap done")
-  #out_df = build_dataframe_from_type( SpatialEvolution.spatial_result_type, length(sr_list_result) )
-  #fixd_fields = fixed_fields()
-  #println("build df done")
+  println("Simulations completed")
+  #out_df = build_dataframe_from_type( SpatialEvolution.spatial_run_result_type, length(sr_list_result) )
+  #println("out_df: ",out_df)
+  println("Writing output csv file")
   writeheader( "$(simname).csv", sr )
   i = 1
   for sr_result in sr_list_result
@@ -56,7 +57,6 @@ function run_trials( simname::AbstractString, sr::SpatialEvolution.spatial_resul
     writerow("$(simname).csv", sr_result )
     i += 1
   end
-  #CSV.write( "$(simname).csv", out_df, header=true, append=true )
 end    
 
   
@@ -97,27 +97,6 @@ function spatial_run_result( num_trials::Int64, N::Int64, num_subpops::Int64, nu
     use_fit_locations, horiz_select, linear_variation, extreme_variation, normal_stddev, ideal_max, ideal_min,
     fit_slope, additive_error, neutral, 0.0, 0.0, 0.0, 0.0 )
 end
-
-#=
-function print_spatial_result( sr::spatial_result_type )
-  println("N: ", sr.N)
-  println("num_subpops: ", sr.num_subpops)
-  println("num_fit_locations: ", sr.num_fit_locations)
-  println("ne: ", sr.nem_emigrants)
-  println("num_attributes: ", sr.num_attributes)
-  println("mu: ", sr.mu)
-  println("normal_stddev: ", sr.normal_stddev)
-  println("ngens: ", sr.ngens)
-  println("burn_in: ", sr.burn_in)
-  println("use_fit_locations: ", sr.use_fit_locations)
-  println("horiz_select: ", sr.horiz_select)
-  println("linear_variation: ",sr.linear_variation)
-  println("extreme_variation: ",sr.extreme_variation)
-  println("fitness_mean: ", sr.fitness_mean)
-  println("fitness_variance: ", sr.fitness_variance)
-  println("attiribute_variance: ", sr.attribute_variance)
-end
-=#
 
 function fixed_parameters()  # included as comments in output csv file
 [ 
@@ -169,32 +148,24 @@ function output_columns()
 end
 
 
-#function writeheader( filename::AbstractString, fixed_fields::Array{Symbol,1}, sr::SpatialEvolution.spatial_result_type )
 function writeheader( filename::AbstractString, sr::SpatialEvolution.spatial_result_type )
   param_strings = [ "# $(string(s))=$(getfield(sr,s))" for s in fixed_parameters()]
-  #println("len ps: ",length(param_strings))
-  #println("ps: ",param_strings)
   open(filename,"w") do str
-    write(str,"# $(string(Dates.today()))\n")
-    write(str,join(param_strings,"\n"),"\n")
-    write(str,join(map(string,varying_parameters()),","),",")
-    write(str,join(map(string,output_columns()),","),"\n")
+    Base.write(str,"# $(string(Dates.today()))\n")
+    Base.write(str,join(param_strings,"\n"),"\n")
+    #println(join(map(string,varying_parameters()),","))
+    #println(join(map(string,output_columns()),","))
+    Base.write(str,join(map(string,varying_parameters()),","),",")
+    Base.write(str,join(map(string,output_columns()),","),"\n")
   end
 end
 
-#function writerow( filename::AbstractString, fixed_fields::Array{Symbol,1}, sr::SpatialEvolution.spatial_run_result_type )
 function writerow( filename::AbstractString, sr::SpatialEvolution.spatial_run_result_type ) 
   param_vals = Any[ getfield( sr, s) for s in varying_parameters()]
   output_vals = Any[ getfield( sr, s) for s in output_columns()]
-  #print("len vals: ",length(vals))
-  #println("  vals: ",vals)
-  #println("num_attributes: ",sr.num_attributes)
-  #println("jvals: ",join(vals,","))
   open(filename,"a") do str
-    write(str,join(param_vals,","),",")
-    write(str,join(output_vals,","),"\n")
-    #println(join(vals,","))
+    Base.write(str,join(param_vals,","),",")
+    Base.write(str,join(output_vals,","),"\n")
   end
 end
-
 

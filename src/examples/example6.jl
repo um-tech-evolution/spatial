@@ -1,6 +1,6 @@
 # Configuration for running spatial simulation
 const simtype = 2    
-const num_trials     = 1  # Number of trials
+const num_trials = 10  # Number of trials
 const N_list = [32]        # Meta-population size
 const num_subpops_list = [16]                     # Number of subpopulations
 const mu_list = [0.00,0.05]                 # per-individual innovation rate 

@@ -20,7 +20,7 @@ empty_variant = variant_type(-1,0.0,0,Vector{Float64}())
     neg_select==true  means that reverse proportional selection is used to select individuals to delete in horiz trans
 """
 function spatial_simulation( sr::SpatialEvolution.spatial_run_result_type )
-  println("N: ",sr.N)
+  println("N: ",sr.N,"  num_subpops: ",sr.num_subpops,"  num_fit_locations: ",sr.num_fit_locations,"  num_attributes: ",sr.num_attributes,"  mu: ",sr.mu  )
   variant_table = Dict{Int64,variant_type}()
   fitness_locations = initialize_fitness_locations(sr)
   id = Int[1]
